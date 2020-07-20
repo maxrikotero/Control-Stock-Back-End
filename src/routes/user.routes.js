@@ -23,6 +23,7 @@ router.get("/:id", async (req, res) => {
 
 // ADD a new user
 router.post("/", async (req, res) => {
+  console.log(req.body);
   const {
     dni,
     firstName,
@@ -41,6 +42,8 @@ router.post("/", async (req, res) => {
     email,
     password,
     phone,
+    createdOn: new Date(),
+    createdBy: "Maxi",
   });
   await user.save();
   res.json({ status: "User Saved" });
