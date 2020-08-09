@@ -1,10 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
-// const bcrypt = require("bcrypt");
-// User Model
 const User = require("../models/user");
-const { isAuth, decodedToken } = require("../utils");
+const { saveAuditModel, decodedToken } = require("../utils");
 
 // Signin
 router.post("/signin", async (req, res) => {
@@ -45,7 +43,6 @@ router.post("/signin", async (req, res) => {
 // GET all Users
 router.get("/", async (req, res) => {
   console.log("llega get");
-  //   const tasks = await User.find();
   res.json("llega");
 });
 
@@ -60,60 +57,75 @@ router.get("/userdata", async (req, res) => {
   }
 });
 
-// GET all Tasks
+// GET User
 router.get("/:id", async (req, res) => {
-  const user = await Task.findById(req.params.id);
+  try {
+    const user = await User.findById(req.params.id);
 
-  return res.status(201).send({ user });
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    return res.status(500).send({ message: "Error", error: error.message });
+  }
 });
 
 // ADD a new user
 router.post("/", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
-    const user = new User({
-      dni: req.body.dni,
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
-      userName: req.body.userName,
-      email: req.body.email,
-      password: req.body.password,
-      phone: req.body.phone,
-      createdBy: _id,
-    });
+
+    const user = new User({ ...req.body, createdBy: _id });
     user.password = await user.encryptPassword(req.body.password);
 
     await user.save();
 
-    res.json({ status: "User Saved" });
+    await saveAuditModel("userCreated", _id);
+
+    res.status(201).send({ success: true, status: "User Saved" });
   } catch (error) {
-    return res.status(500).send({ message: "Error", error: error.message });
+    return res
+      .status(500)
+      .send({ success: false, message: "Error", error: error.message });
   }
 });
 
-// UPDATE a new task
+// UPDATE a new user
 router.put("/:id", async (req, res) => {
-  const {
-    dni,
-    firstName,
-    lastName,
-    userName,
-    email,
-    password,
-    phone,
-  } = req.body;
-  const updateUser = {
-    dni,
-    firstName,
-    lastName,
-    userName,
-    email,
-    password,
-    phone,
-  };
-  console.log("llega post");
-  //   await User.findByIdAndUpdate(req.params.id, updateUser);
-  //   res.json({ status: "User Updated" });
+  try {
+    const { _id } = decodedToken(req);
+
+    const update = {
+      dni: req.body.dni,
+      cuil: req.body.cuil,
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      userName: req.body.userName,
+      email: req.body.email,
+      phone: req.body.phone,
+      mobile: req.body.mobile,
+    };
+    const user = new User();
+    update.password = await user.encryptPassword(req.body.password);
+    console.log("update", update);
+    const updatedUser = await User.findOneAndUpdate(
+      { _id: req.body._id },
+      update
+    );
+
+    await saveAuditModel("Usuario Actualizado", _id);
+
+    return res.status(201).send({
+      success: true,
+      message: "Usuario Actualizado",
+      data: updatedUser,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .send({ success: false, message: "Error", error: error.message });
+  }
 });
 
 // router.delete("/:id", async (req, res) => {

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { isAuth, decodedToken } = require("../utils");
+const { saveAuditModel, decodedToken } = require("../utils");
 
 // Product Model
 const Product = require("../models/product");
@@ -11,7 +11,14 @@ const ProductMovement = require("../models/productMovement");
 // GET all Products
 router.get("/", async (req, res) => {
   const products = await Product.find();
-  console.log("lega ", products);
+
+  // {
+  //   ...product,
+  //   expire: product.expire
+  //     ? new Date(product.expire).toISOString().split("T")[0]
+  //     : "",
+  // };
+  // console.log("lega ", products);
   res.json(products);
 });
 
@@ -38,82 +45,122 @@ router.get("/movement/:id", async (req, res) => {
 
 // ADD a new product
 router.post("/", async (req, res) => {
-  const product = new Product({
-    code: req.body.code,
-    name: req.body.name,
-    price: req.body.price,
-    category: req.body.category,
-    brand: req.body.brand,
-    countInStock: req.body.countInStock,
-    description: req.body.description,
-  });
-  const newProduct = await product.save();
+  try {
+    const { _id } = decodedToken(req);
 
-  const movement = new ProductMovement({
-    product: newProduct._id,
-    input: true,
-    quality: newProduct.countInStock,
-  });
+    const product = new Product({
+      ...req.body,
+      createdBy: _id,
+    });
+    const newProduct = await product.save();
 
-  const newMovement = await movement.save();
+    const movement = new ProductMovement({
+      product: newProduct._id,
+      input: true,
+      quality: newProduct.stock,
+    });
 
-  if (newMovement) {
+    await saveAuditModel("Producto Creado", _id);
+
+    await movement.save();
+
+    return res.status(201).send({
+      success: true,
+      message: "Nuevo Producto Creado",
+      data: newProduct,
+    });
+  } catch (error) {
     return res
-      .status(201)
-      .send({ message: "Nuevo Producto Creado", data: newProduct });
+      .status(500)
+      .send({ success: false, message: "Error", error: error.message });
   }
 });
 
 // UPDATE a product
 router.put("/:id", async (req, res) => {
-  const product = await Product.findById(req.body._id);
+  try {
+    const { _id } = decodedToken(req);
 
-  if (product) {
-    product.name = req.body.name;
-    product.price = req.body.price;
-    product.brand = req.body.brand;
-    product.category = req.body.category;
-    product.countInStock = req.body.countInStock;
-    product.description = req.body.description;
-    const updatedProduct = await product.save();
+    const product = await Product.findById(req.body._id);
 
-    const decreseStock = product.countInStock <= req.body.countInStock;
+    if (product) {
+      const update = {
+        code: req.body.code,
+        name: req.body.name,
+        brand: req.body.brand,
+        price: req.body.price,
+        stock: req.body.stock,
+        minStock: req.body.minStock,
+        category: req.body.category,
+        expire: req.body.expire,
+        description: req.body.description,
+      };
 
-    const movement = new ProductMovement({
-      product: req.body._id,
-      input: !decreseStock,
-      output: decreseStock,
-      isUpdated: true,
-      quality: req.body.countInStock,
-    });
+      const updatedProduct = await Product.findOneAndUpdate(
+        { _id: req.body._id },
+        update
+      );
 
-    await movement.save();
+      const decreseStock = product.stock <= req.body.countInStock;
 
-    if (updatedProduct) {
-      return res
-        .status(200)
-        .send({ message: "Producto Actualizado", data: updatedProduct });
+      const movement = new ProductMovement({
+        product: req.body._id,
+        input: !decreseStock,
+        output: decreseStock,
+        isUpdated: true,
+        quality: req.body.stock,
+        createdBy: _id,
+      });
+
+      await movement.save();
+
+      await saveAuditModel("Producto Actualizado", _id);
+
+      const products = await Product.find();
+      return res.status(201).send({
+        success: true,
+        message: "Producto Actualizado",
+        data: products,
+      });
     }
+  } catch (error) {
+    return res
+      .status(500)
+      .send({ success: false, message: "Error", error: error.message });
   }
-
-  return res.status(500).send({ message: " Error Actualizando el Producto." });
-
-  // const product = await Product.findById(req.params.id);
-
-  // const { product_name, price, category } = req.body;
-  // const newProduct = { product_name, price, category };
-  // await Product.findByIdAndUpdate(req.params.id, newProduct);
-  // res.json({ status: "Product Updated" });
 });
 
 router.delete("/:id", async (req, res) => {
-  const deletedProduct = await Product.findById(req.params.id);
-  if (deletedProduct) {
-    await deletedProduct.remove();
-    res.send({ message: "Producto Borrado" });
-  } else {
-    res.send("Error en Borrado de producto.");
+  try {
+    const { _id } = decodedToken(req);
+
+    const deletedProduct = await Product.findById(req.params.id);
+
+    if (deletedProduct) await deletedProduct.remove();
+
+    await saveAuditModel("Producto Eliminado", _id);
+
+    return res.status(201).send({
+      success: true,
+      message: "Producto Borrado",
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .send({ success: false, message: "Error", error: error.message });
   }
+  const { _id } = decodedToken(req);
+  const deletedProduct = await Product.findById(req.params.id);
+  await saveAuditModel("Producto Creado", _id);
+
+  res.json({ success: true });
+  // const deletedProduct = await Product.findById(req.params.id);
+  // if (deletedProduct) {
+  //   await deletedProduct.remove();
+  //   res.send({ message: "Producto Borrado" });
+  // } else {
+  //   res.send("Error en Borrado de producto.");
+  // }
 
   // await Product.findByIdAndRemove(req.params.id);
   // res.json({ status: "Product Deleted" });

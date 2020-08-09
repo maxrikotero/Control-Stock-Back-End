@@ -3,13 +3,15 @@ const bcrypt = require("bcrypt");
 const { Schema } = mongoose;
 
 const UserSchema = new Schema({
-  dni: { type: Number },
-  firstName: { type: String },
-  lastName: { type: String },
-  userName: { type: String },
-  email: { type: String },
-  password: { type: String },
+  dni: { type: Number, required: true },
+  cuil: { type: Number },
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
+  userName: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true, lowercase: true },
+  password: { type: String, required: true },
   phone: { type: Number },
+  mobile: { type: Number },
   isAdmin: { type: Boolean, required: true, default: false },
   deletedAt: { type: Date, default: Date.now },
   deletedBy: { type: String },

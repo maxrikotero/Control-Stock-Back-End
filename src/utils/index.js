@@ -1,5 +1,15 @@
 const jwt = require("jsonwebtoken");
 const config = require("../config");
+const Audit = require("../models/audit");
+
+const saveAuditModel = async (auditType, _id) => {
+  const audit = new Audit({
+    audit: auditType,
+    createdBy: _id,
+  });
+
+  await audit.save();
+};
 // const getToken = (user) => {
 //   return jwt.sign(
 //     {
@@ -33,11 +43,14 @@ const isAuth = (req, res, next) => {
 };
 
 const decodedToken = (req) => {
-  const usertoken = req.headers.authorization;
-  const token = usertoken.split(" ");
-  const decoded = jwt.verify(token[1], "secretkey");
-
-  return decoded;
+  try {
+    const usertoken = req.headers.authorization;
+    const token = usertoken.split(" ");
+    const decoded = jwt.verify(token[1], "secretkey");
+    return decoded;
+  } catch (error) {
+    return "";
+  }
 };
 
 // const isAdmin = (req, res, next) => {
@@ -51,6 +64,7 @@ const decodedToken = (req) => {
 module.exports = {
   isAuth,
   decodedToken,
+  saveAuditModel,
 };
 
 // export { getToken, isAuth, isAdmin };

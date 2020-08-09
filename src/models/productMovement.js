@@ -10,6 +10,7 @@ const ProductMovementSchema = new Schema({
   ouput: { type: Boolean, default: false },
   quality: { type: Number, default: 0 },
   isUpdated: { type: Boolean, default: false },
+  createdBy: { type: mongoose.Schema.Types, ref: "User", default: false },
   isSale: { type: Boolean, default: false },
   dateAt: { type: Date, default: Date.now },
 });
