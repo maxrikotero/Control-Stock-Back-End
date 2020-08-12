@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { saveAuditModel, decodedToken } = require("../utils");
 
 // Sales Model
 const Sale = require("../models/sale");
@@ -14,7 +15,7 @@ const decreaseStock = async (_id, _quality) => {
   Product.findByIdAndUpdate(
     _id,
     {
-      countInStock: product.countInStock - _quality,
+      stock: product.stock - _quality,
     },
     { new: true },
     (err, product) => {
@@ -29,26 +30,41 @@ router.get("/", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-  const newSale = new Sale({
-    products: req.body.products,
-    // user: req.user._id,
-    totalPrice: req.body.totalPrice,
-    client: req.body.client,
-  });
-  const newSaleCreated = await newSale.save();
+  try {
+    const { _id } = decodedToken(req);
 
-  req.body.products.map(async (item) => {
-    decreaseStock(item.product, item.quality);
+    if (_id) {
+      const newSale = new Sale({
+        products: req.body.products,
+        user: _id,
+        totalPrice: req.body.totalPrice,
+        client: req.body.client,
+      });
 
-    const movement = new ProductMovement({
-      product: item.product,
-      output: true,
-      isSale: true,
-      quality: item.quality,
-    });
+      const sale = await newSale.save();
 
-    await movement.save();
-  });
+      req.body.products.map(async (item) => {
+        decreaseStock(item.product, item.quality);
+
+        const movement = new ProductMovement({
+          product: item.product,
+          output: true,
+          isSale: true,
+          quality: item.quality,
+        });
+
+        await movement.save();
+      });
+
+      await saveAuditModel("Venta Generada", _id);
+
+      return res.status(201).send({ success: true, message: "Venta Generada" });
+    } else {
+      return res.status(500).send({ message: " No autorizado." });
+    }
+  } catch (error) {
+    return res.status(500).send({ message: "Error", error: error.message });
+  }
 
   res
     .status(201)

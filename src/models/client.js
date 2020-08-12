@@ -7,7 +7,10 @@ const ClientSchema = new Schema({
     required: true,
   },
   address: { type: String },
-  phone_number: { type: String },
+  phone: { type: String },
+  mobile: { type: String },
+  cuil: { type: Number, required: true, unique: true },
+  description: { type: String },
   createdAt: { type: Date, default: Date.now },
   createdBy: { type: mongoose.Schema.Types, ref: "User" },
 });

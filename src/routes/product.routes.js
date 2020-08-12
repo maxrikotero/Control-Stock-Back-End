@@ -149,21 +149,6 @@ router.delete("/:id", async (req, res) => {
       .status(500)
       .send({ success: false, message: "Error", error: error.message });
   }
-  const { _id } = decodedToken(req);
-  const deletedProduct = await Product.findById(req.params.id);
-  await saveAuditModel("Producto Creado", _id);
-
-  res.json({ success: true });
-  // const deletedProduct = await Product.findById(req.params.id);
-  // if (deletedProduct) {
-  //   await deletedProduct.remove();
-  //   res.send({ message: "Producto Borrado" });
-  // } else {
-  //   res.send("Error en Borrado de producto.");
-  // }
-
-  // await Product.findByIdAndRemove(req.params.id);
-  // res.json({ status: "Product Deleted" });
 });
 
 module.exports = router;

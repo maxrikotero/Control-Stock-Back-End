@@ -7,7 +7,7 @@ const ProductMovementSchema = new Schema({
     ref: "Product",
   },
   input: { type: Boolean, default: false },
-  ouput: { type: Boolean, default: false },
+  output: { type: Boolean, default: false },
   quality: { type: Number, default: 0 },
   isUpdated: { type: Boolean, default: false },
   createdBy: { type: mongoose.Schema.Types, ref: "User", default: false },
