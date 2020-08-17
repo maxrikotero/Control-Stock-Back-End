@@ -12,13 +12,6 @@ const ProductMovement = require("../models/productMovement");
 router.get("/", async (req, res) => {
   const products = await Product.find();
 
-  // {
-  //   ...product,
-  //   expire: product.expire
-  //     ? new Date(product.expire).toISOString().split("T")[0]
-  //     : "",
-  // };
-  // console.log("lega ", products);
   res.json(products);
 });
 

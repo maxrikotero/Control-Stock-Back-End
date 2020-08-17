@@ -1,13 +1,17 @@
 const express = require("express");
 const router = express.Router();
+const createPdf = require("../documents/ticket");
 const { saveAuditModel, decodedToken } = require("../utils");
 
 // Sales Model
 const Sale = require("../models/sale");
 
 const Product = require("../models/product");
+const Client = require("../models/client");
+const User = require("../models/user");
 
 const ProductMovement = require("../models/productMovement");
+const { request } = require("express");
 
 const decreaseStock = async (_id, _quality) => {
   const product = await Product.findById(_id);
@@ -25,8 +29,34 @@ const decreaseStock = async (_id, _quality) => {
 };
 
 router.get("/", async (req, res) => {
-  const sales = await Sale.find({});
-  res.send(sales);
+  try {
+    const sales = await Sale.find();
+    res.status(500).send({ success: true, data: sales });
+  } catch (error) {
+    return res.status(500).send({ message: "Error", error });
+  }
+});
+
+router.get("/:id", async (req, res) => {
+  try {
+    const sale = await Sale.find({ _id: req.params.id })
+      .populate({
+        path: "products",
+        populate: { path: "product" },
+      })
+      .populate({
+        path: "user",
+        select: "firstName lastName",
+      })
+      .populate({
+        path: "client",
+        select: "name address phone cuil",
+      });
+
+    res.status(200).send({ success: true, data: sale });
+  } catch (error) {
+    return res.status(500).send({ message: "Error", error });
+  }
 });
 
 router.post("/", async (req, res) => {
@@ -41,8 +71,6 @@ router.post("/", async (req, res) => {
         client: req.body.client,
       });
 
-      const sale = await newSale.save();
-
       req.body.products.map(async (item) => {
         decreaseStock(item.product, item.quality);
 
@@ -56,9 +84,15 @@ router.post("/", async (req, res) => {
         await movement.save();
       });
 
+      const sale = await newSale.save();
+
       await saveAuditModel("Venta Generada", _id);
 
-      return res.status(201).send({ success: true, message: "Venta Generada" });
+      const client = await Client.find({ _id: req.body.client });
+
+      const users = await User.find({ _id });
+
+      await createPdf(req.body, client, users, sale._id, sale, res);
     } else {
       return res.status(500).send({ message: " No autorizado." });
     }
@@ -66,9 +100,9 @@ router.post("/", async (req, res) => {
     return res.status(500).send({ message: "Error", error: error.message });
   }
 
-  res
-    .status(201)
-    .send({ message: "Nueva Venta Generada", data: newSaleCreated });
+  // res
+  //   .status(201)
+  //   .send({ message: "Nueva Venta Generada", data: newSaleCreated });
 });
 
 module.exports = router;

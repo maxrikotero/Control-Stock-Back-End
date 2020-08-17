@@ -1,4 +1,5 @@
 const express = require("express");
+const fs = require("fs");
 const morgan = require("morgan");
 const path = require("path");
 var cors = require("cors");
@@ -22,6 +23,17 @@ app.use("/api/providers", require("./routes/provider.routes"));
 app.use("/api/sales", require("./routes/sales.routes"));
 app.use("/api/clients", require("./routes/client.routes"));
 app.use("/api/categories", require("./routes/category.routes"));
+
+app.get("/api/fetch-pdf/:id", (req, res) => {
+  res.sendFile(
+    `${__dirname}/documents/tickets/sale${req.params.id}.pdf`,
+    (err) => {
+      if (err) {
+        res.status(err.status).end();
+      }
+    }
+  );
+});
 
 // Static Files
 app.use(express.static(path.join(__dirname, "public")));

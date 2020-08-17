@@ -49,7 +49,9 @@ router.get("/", async (req, res) => {
 // GET User session
 router.get("/userdata", async (req, res) => {
   try {
+    console.log("_id     ", req.headers.authorization);
     const { _id } = decodedToken(req);
+    console.log("_id     ", _id);
     const user = await User.findById({ _id });
     return res.status(201).send(user);
   } catch (error) {
@@ -75,13 +77,24 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
+    const role = req.body.role;
 
-    const user = new User({ ...req.body, createdBy: _id });
+    const roles = {
+      isAdmin: role === "Administrador",
+      isSeller: role === "Vendedor",
+      isControlStock: role === "Control de stock",
+    };
+    const user = new User({
+      ...req.body,
+      createdBy: _id,
+      ...roles,
+    });
+
     user.password = await user.encryptPassword(req.body.password);
 
     await user.save();
 
-    await saveAuditModel("userCreated", _id);
+    await saveAuditModel("Usuario Creado", _id);
 
     res.status(201).send({ success: true, status: "User Saved" });
   } catch (error) {
