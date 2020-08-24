@@ -2,7 +2,29 @@ const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const Audit = require("../models/audit");
 const { saveAuditModel, decodedToken } = require("../utils");
+
+router.delete("/:id", async (req, res) => {
+  try {
+    const { _id } = decodedToken(req);
+
+    const deletedUser = await User.findById(req.params.id);
+
+    if (deletedUser) await deletedUser.remove();
+
+    await saveAuditModel("Usuario Eliminado", _id);
+
+    return res.status(201).send({
+      success: true,
+      message: "Usuario Borrado",
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .send({ success: false, message: "Error", error: error.message });
+  }
+});
 
 // Signin
 router.post("/signin", async (req, res) => {
@@ -42,16 +64,31 @@ router.post("/signin", async (req, res) => {
 
 // GET all Users
 router.get("/", async (req, res) => {
-  console.log("llega get");
-  res.json("llega");
+  try {
+    const users = await User.find();
+    return res.status(201).send(users);
+  } catch (error) {
+    return res.status(500).send("Error");
+  }
+});
+
+// GET all Audits
+router.get("/audit", async (req, res) => {
+  try {
+    const audits = await Audit.find().populate({
+      path: "createdBy",
+      select: "firstName lastName",
+    });
+    return res.status(201).send(audits);
+  } catch (error) {
+    return res.status(500).send("Error");
+  }
 });
 
 // GET User session
 router.get("/userdata", async (req, res) => {
   try {
-    console.log("_id     ", req.headers.authorization);
     const { _id } = decodedToken(req);
-    console.log("_id     ", _id);
     const user = await User.findById({ _id });
     return res.status(201).send(user);
   } catch (error) {
@@ -104,10 +141,18 @@ router.post("/", async (req, res) => {
   }
 });
 
-// UPDATE a new user
+// UPDATE a user
 router.put("/:id", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
+
+    const role = req.body.role;
+
+    const roles = {
+      isAdmin: role === "Administrador",
+      isSeller: role === "Vendedor",
+      isControlStock: role === "Control de stock",
+    };
 
     const update = {
       dni: req.body.dni,
@@ -118,10 +163,13 @@ router.put("/:id", async (req, res) => {
       email: req.body.email,
       phone: req.body.phone,
       mobile: req.body.mobile,
+      ...roles,
     };
     const user = new User();
-    update.password = await user.encryptPassword(req.body.password);
-    console.log("update", update);
+
+    if (req.body.isPasswordChange)
+      update.password = await user.encryptPassword(req.body.password);
+
     const updatedUser = await User.findOneAndUpdate(
       { _id: req.body._id },
       update
@@ -140,10 +188,5 @@ router.put("/:id", async (req, res) => {
       .send({ success: false, message: "Error", error: error.message });
   }
 });
-
-// router.delete("/:id", async (req, res) => {
-//   await Task.findByIdAndRemove(req.params.id);
-//   res.json({ status: "Task Deleted" });
-// });
 
 module.exports = router;

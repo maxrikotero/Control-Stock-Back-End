@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const ProductSchema = new Schema({
+const RawSchema = new Schema({
   code: { type: Number, default: 0, required: true, unique: true },
   name: { type: String, required: true, unique: true },
   image: { type: String },
@@ -10,8 +10,8 @@ const ProductSchema = new Schema({
   expire: { type: Date, default: Date.now },
   category: { type: mongoose.Schema.Types, ref: "Category" },
   minStock: { type: Number, default: 0 },
-  isRawMaterial: { type: Boolean, default: false },
   stock: { type: Number, default: 0, required: true },
+  isRawMaterial: { type: Boolean, default: false },
   description: { type: String },
   createAt: { type: Date, default: Date.now },
   createdBy: { type: mongoose.Schema.Types, ref: "User" },
@@ -19,4 +19,4 @@ const ProductSchema = new Schema({
   updatedBy: { type: mongoose.Schema.Types, ref: "User" },
 });
 
-module.exports = mongoose.model("Product", ProductSchema);
+module.exports = mongoose.model("RawMaterial", RawSchema);

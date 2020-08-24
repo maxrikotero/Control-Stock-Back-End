@@ -5,12 +5,19 @@ const { saveAuditModel, decodedToken } = require("../utils");
 // Product Model
 const Product = require("../models/product");
 
-// Product Model
+// ProductMovement Model
 const ProductMovement = require("../models/productMovement");
 
 // GET all Products
 router.get("/", async (req, res) => {
-  const products = await Product.find();
+  const products = await Product.find({ isRawMaterial: false || null });
+
+  res.json(products);
+});
+
+// GET all Raw Material
+router.get("/rawmaterial", async (req, res) => {
+  const products = await Product.find({ isRawMaterial: true });
 
   res.json(products);
 });
