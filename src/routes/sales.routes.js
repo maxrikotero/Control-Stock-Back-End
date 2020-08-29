@@ -99,10 +99,6 @@ router.post("/", async (req, res) => {
   } catch (error) {
     return res.status(500).send({ message: "Error", error: error.message });
   }
-
-  // res
-  //   .status(201)
-  //   .send({ message: "Nueva Venta Generada", data: newSaleCreated });
 });
 
 module.exports = router;

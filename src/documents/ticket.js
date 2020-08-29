@@ -5,7 +5,6 @@ const htmlStructure = ({ client, users, sale, body }) => {
   const { firstName, lastName } = users[0];
   const { products, totalPrice } = body;
 
-  console.log("users---", users[0]);
   let date = new Date();
 
   let day = date.getDate();

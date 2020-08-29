@@ -10,8 +10,7 @@ const ProductMovement = require("../models/productMovement");
 
 // GET all Products
 router.get("/", async (req, res) => {
-  const products = await Product.find({ isRawMaterial: false || null });
-
+  const products = await Product.find({ isRawMaterial: false });
   res.json(products);
 });
 

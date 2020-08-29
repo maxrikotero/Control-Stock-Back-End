@@ -18,9 +18,17 @@ router.get("/:id", async (req, res) => {
 
 // ADD a new provider
 router.post("/", async (req, res) => {
-  const { socialId, dni, brand, phone, mobile, email } = req.body;
+  const { socialId, dni, firstName, lastName, phone, mobile, email } = req.body;
 
-  const provider = new Provider({ socialId, dni, brand, phone, mobile, email });
+  const provider = new Provider({
+    socialId,
+    dni,
+    phone,
+    mobile,
+    email,
+    firstName,
+    lastName,
+  });
   await provider.save();
   res.json({ status: "Provider Saved" });
 });
