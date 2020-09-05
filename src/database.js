@@ -1,8 +1,9 @@
-const mongoose = require('mongoose');
-const URI = 'mongodb://localhost/mern-crud-test';
+const mongoose = require("mongoose");
+const URI = "mongodb://127.0.0.1:27017/marisadb";
 
-mongoose.connect(URI)
-  .then(db => console.log('Base de datos conectada'))
-  .catch(error => console.error(error));
+mongoose
+  .connect(URI, { useNewUrlParser: true })
+  .then((db) => console.log("Base de datos conectada"))
+  .catch((error) => console.error(error));
 
 module.exports = mongoose;
