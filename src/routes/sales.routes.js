@@ -22,9 +22,7 @@ const decreaseStock = async (_id, _quality) => {
       stock: product.stock - _quality,
     },
     { new: true },
-    (err, product) => {
-      console.log("teste", err, product);
-    }
+    (err, product) => {}
   );
 };
 
@@ -94,7 +92,7 @@ router.post("/", async (req, res) => {
 
       await createPdf(req.body, client, users, sale._id, sale, res);
     } else {
-      return res.status(500).send({ message: " No autorizado." });
+      return res.status(200).send({ message: " No autorizado." });
     }
   } catch (error) {
     return res.status(500).send({ message: "Error", error: error.message });
