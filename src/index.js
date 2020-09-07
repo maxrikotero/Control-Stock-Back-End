@@ -23,6 +23,8 @@ app.use("/api/providers", require("./routes/provider.routes"));
 app.use("/api/sales", require("./routes/sales.routes"));
 app.use("/api/clients", require("./routes/client.routes"));
 app.use("/api/categories", require("./routes/category.routes"));
+app.use("/api/payments", require("./routes/payments.routes"));
+app.use("/api/pricetype", require("./routes/priceTypes.routes"));
 
 app.get("/api/fetch-pdf/:id", (req, res) => {
   res.sendFile(

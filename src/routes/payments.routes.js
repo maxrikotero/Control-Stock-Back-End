@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { saveAuditModel, decodedToken } = require("../utils");
 
 // Provider Model
 const Payments = require("../models/payment");
@@ -20,7 +21,7 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
-    const payment = new Payments(...req.body);
+    const payment = new Payments({ ...req.body, createdBy: _id });
     await payment.save();
 
     await saveAuditModel("Tipo de pago creado", _id);

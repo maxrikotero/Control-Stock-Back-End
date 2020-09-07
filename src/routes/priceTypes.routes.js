@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { saveAuditModel, decodedToken } = require("../utils");
 
 // Provider Model
 const PriceType = require("../models/priceType");
@@ -20,7 +21,7 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
-    const priceType = new PriceType(...req.body);
+    const priceType = new PriceType({ ...req.body });
     await priceType.save();
 
     await saveAuditModel("Tipo de precio creado", _id);

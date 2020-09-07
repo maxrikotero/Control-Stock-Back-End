@@ -10,13 +10,13 @@ const ProductMovement = require("../models/productMovement");
 
 // GET all Products
 router.get("/", async (req, res) => {
-  const products = await Product.find({ isRawMaterial: false });
+  const products = await Product.find();
   res.json(products);
 });
 
 // GET all Raw Material
 router.get("/rawmaterial", async (req, res) => {
-  const products = await Product.find({ isRawMaterial: true });
+  const products = await Product.find();
 
   res.json(products);
 });
@@ -24,13 +24,19 @@ router.get("/rawmaterial", async (req, res) => {
 // Search products
 router.get("/search", async (req, res) => {
   const { query: value } = req.query;
-  const products = await Product.find({ code: parseInt(value, 10) });
+  const products = await Product.find({ code: parseInt(value, 10) }).populate({
+    path: "prices",
+    populate: { path: "priceType", select: "_id name" },
+  });
   return res.json({ products });
 });
 
 // GET product
 router.get("/:id", async (req, res) => {
-  const product = await Product.findById(req.params.id);
+  const product = await Product.findById(req.params.id).populate({
+    path: "prices",
+    select: "_id name",
+  });
   res.json(product);
 });
 
@@ -51,6 +57,7 @@ router.post("/", async (req, res) => {
       ...req.body,
       createdBy: _id,
     });
+
     const newProduct = await product.save();
 
     const movement = new ProductMovement({
@@ -66,7 +73,7 @@ router.post("/", async (req, res) => {
     return res.status(201).send({
       success: true,
       message: "Nuevo Producto Creado",
-      data: newProduct,
+      data: {},
     });
   } catch (error) {
     return res
