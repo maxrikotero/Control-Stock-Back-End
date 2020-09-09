@@ -16,6 +16,11 @@ const SaleSchema = new Schema(
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     paidAt: { type: Date, default: Date.now },
     totalPrice: { type: Number, required: true },
+    paymentType: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Payments",
+    },
+    billType: Number,
     client: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Client",

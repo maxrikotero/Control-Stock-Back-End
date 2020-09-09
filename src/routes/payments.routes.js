@@ -39,7 +39,7 @@ router.put("/:id", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
 
-    await Payments.findByIdAndUpdate(req.params.id, ...req.body);
+    await Payments.findByIdAndUpdate(req.params.id, { ...req.body });
 
     await saveAuditModel("Tipo de pago Actualizado", _id);
 

@@ -11,7 +11,6 @@ const Client = require("../models/client");
 const User = require("../models/user");
 
 const ProductMovement = require("../models/productMovement");
-const { request } = require("express");
 
 const decreaseStock = async (_id, _quality) => {
   const product = await Product.findById(_id);
@@ -65,6 +64,8 @@ router.post("/", async (req, res) => {
       const newSale = new Sale({
         products: req.body.products,
         user: _id,
+        paymentType: req.body.paymentType,
+        billType: req.body.billType,
         totalPrice: req.body.totalPrice,
         client: req.body.client,
       });
