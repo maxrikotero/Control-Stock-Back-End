@@ -10,7 +10,10 @@ const ProductMovement = require("../models/productMovement");
 
 // GET all Products
 router.get("/", async (req, res) => {
-  const products = await Product.find();
+  const products = await Product.find().populate({
+    path: "prices",
+    populate: { path: "priceType", select: "_id name" },
+  });
   res.json(products);
 });
 
@@ -94,7 +97,7 @@ router.put("/:id", async (req, res) => {
         code: req.body.code,
         name: req.body.name,
         brand: req.body.brand,
-        price: req.body.price,
+        prices: req.body.prices,
         stock: req.body.stock,
         minStock: req.body.minStock,
         category: req.body.category,
@@ -102,6 +105,7 @@ router.put("/:id", async (req, res) => {
         description: req.body.description,
       };
 
+      console.log(req.body.prices);
       const updatedProduct = await Product.findOneAndUpdate(
         { _id: req.body._id },
         update
@@ -123,10 +127,12 @@ router.put("/:id", async (req, res) => {
       await saveAuditModel("Producto Actualizado", _id);
 
       const products = await Product.find();
+
       return res.status(201).send({
         success: true,
         message: "Producto Actualizado",
-        data: products,
+        data: [],
+        // data: products,
       });
     }
   } catch (error) {
