@@ -36,10 +36,15 @@ router.get("/search", async (req, res) => {
 
 // GET product
 router.get("/:id", async (req, res) => {
-  const product = await Product.findById(req.params.id).populate({
-    path: "prices",
-    select: "_id name",
-  });
+  const product = await Product.findById(req.params.id)
+    .populate({
+      path: "prices",
+      select: "_id name",
+    })
+    .populate({
+      path: "category",
+      select: "_id name",
+    });
   res.json(product);
 });
 
