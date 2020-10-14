@@ -268,11 +268,9 @@ const createPdf = async (body, client, users, _id, sale, res, salesCount) => {
   await pdf
     .create(htmlStructure({ client, users, sale, body, salesCount }), {})
     .toFile(`${__dirname}/tickets/sale${_id}.pdf`, (err) => {
-      console.log("errorrr", err);
       if (err) {
         return res.status(500).send({ message: "Error", error: error });
       }
-
       return res
         .status(500)
         .send({ success: true, message: "Venta Generada", data: sale });
