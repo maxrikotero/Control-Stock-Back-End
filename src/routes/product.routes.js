@@ -110,11 +110,7 @@ router.put("/:id", async (req, res) => {
         description: req.body.description,
       };
 
-      console.log(req.body.prices);
-      const updatedProduct = await Product.findOneAndUpdate(
-        { _id: req.body._id },
-        update
-      );
+      await Product.findOneAndUpdate({ _id: req.body._id }, update);
 
       const decreseStock = product.stock <= req.body.countInStock;
 
@@ -136,8 +132,7 @@ router.put("/:id", async (req, res) => {
       return res.status(201).send({
         success: true,
         message: "Producto Actualizado",
-        data: [],
-        // data: products,
+        data: products,
       });
     }
   } catch (error) {

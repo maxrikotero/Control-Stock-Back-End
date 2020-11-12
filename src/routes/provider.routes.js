@@ -3,6 +3,7 @@ const router = express.Router();
 
 // Provider Model
 const Provider = require("../models/provider");
+const { decodedToken } = require("../utils");
 
 // GET all Providers
 router.get("/", async (req, res) => {
@@ -26,14 +27,11 @@ router.get("/:id", async (req, res) => {
 // ADD a new provider
 router.post("/", async (req, res) => {
   try {
-    const { socialId, dni, phone, email, name } = req.body;
+    const { _id } = decodedToken(req);
 
     const provider = new Provider({
-      socialId,
-      dni,
-      phone,
-      email,
-      name,
+      ...req.body,
+      createdBy: _id,
     });
     await provider.save();
 
@@ -43,19 +41,19 @@ router.post("/", async (req, res) => {
   } catch (error) {
     return res
       .status(500)
-      .send({ success: false, message: "Error", error: error.message });
+      .send({ success: false, message: "Error", error: "error" });
   }
 });
 
 // UPDATE a provider
 router.put("/:id", async (req, res) => {
   try {
-    const { name, socialId, dni, phone, email } = req.body;
-    const editProvider = { name, socialId, dni, brand, phone, mobile, email };
-    const providerUpdated = await Provider.findByIdAndUpdate(
-      req.params.id,
-      editProvider
-    );
+    const { _id } = decodedToken(req);
+
+    const providerUpdated = await Provider.findByIdAndUpdate(req.params.id, {
+      ...req.body,
+      updatedBy: _id,
+    });
     return res.status(201).send({
       success: true,
       message: "Proveedor Actualizado",
@@ -69,7 +67,21 @@ router.put("/:id", async (req, res) => {
 });
 
 router.delete("/:id", async (req, res) => {
-  await Provider.findByIdAndRemove(req.params.id);
+  try {
+    const { _id } = decodedToken(req);
+
+    if (_id) await Provider.findByIdAndRemove(req.params.id);
+    else throw "Error";
+    return res.status(201).send({
+      success: true,
+      message: "Proveedor Borrado",
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .send({ success: false, message: "Error", error: error.message });
+  }
+
   res.json({ status: "Provider Deleted" });
 });
 

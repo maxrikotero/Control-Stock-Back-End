@@ -2,12 +2,22 @@ const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 const RawMaterialSchema = new Schema({
-  name: { type: String, required: true },
-  unitPrice: { type: Number, default: 0, required: true },
-  totalPrice: { type: Number, default: 0, required: true },
-  provider: { type: mongoose.Schema.Types, ref: "Providers" },
+  name: { type: String, required: true, unique: true },
+  image: { type: String },
+  brand: { type: String },
+  providers: [
+    {
+      price: Number,
+      provider: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Provider",
+      },
+    },
+  ],
+  expire: { type: Date, default: Date.now },
   category: { type: mongoose.Schema.Types, ref: "Category" },
-  quality: { type: Number, default: 0, required: true },
+  minStock: { type: Number, default: 0 },
+  stock: { type: Number, default: 0, required: true },
   description: { type: String },
   createAt: { type: Date, default: Date.now },
   createdBy: { type: mongoose.Schema.Types, ref: "User" },
@@ -15,4 +25,4 @@ const RawMaterialSchema = new Schema({
   updatedBy: { type: mongoose.Schema.Types, ref: "User" },
 });
 
-module.exports = mongoose.model("RawMaterial", RawMaterialSchema);
+module.exports = mongoose.model("RawMaterials", RawMaterialSchema);
