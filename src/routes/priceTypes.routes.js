@@ -39,7 +39,7 @@ router.put("/:id", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
     await saveAuditModel("Tipo de precio Actualizado", _id);
-    await PriceType.findByIdAndUpdate(req.params.id, ...req.body);
+    await PriceType.findByIdAndUpdate(req.params.id, { ...req.body });
 
     const priceTypes = await PriceType.find();
 

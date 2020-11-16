@@ -116,16 +116,20 @@ router.put("/:id", async (req, res) => {
 
       const decreseStock = rawMaterial.stock <= req.body.countInStock;
 
-      const movement = new RawMaterialMovement({
-        rawMaterial: req.body._id,
-        input: !decreseStock,
-        output: decreseStock,
-        isUpdated: true,
-        quality: req.body.stock,
-        createdBy: _id,
-      });
+      const updateStock = rawMaterial.stock !== req.body.countInStock;
 
-      await movement.save();
+      if (updateStock) {
+        const movement = new RawMaterialMovement({
+          rawMaterial: req.body._id,
+          input: !decreseStock,
+          output: decreseStock,
+          isUpdated: true,
+          quality: req.body.stock,
+          createdBy: _id,
+        });
+
+        await movement.save();
+      }
 
       await saveAuditModel("Materia Prima Actualizada", _id);
 
