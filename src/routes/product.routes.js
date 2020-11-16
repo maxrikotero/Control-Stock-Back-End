@@ -114,7 +114,7 @@ router.put("/:id", async (req, res) => {
 
       const decreseStock = product.stock <= req.body.countInStock;
 
-      const updateStock = rawMaterial.stock !== req.body.countInStock;
+      const updateStock = product.stock !== req.body.countInStock;
 
       if (updateStock) {
         const movement = new ProductMovement({
