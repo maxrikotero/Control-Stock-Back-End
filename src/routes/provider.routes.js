@@ -81,8 +81,6 @@ router.delete("/:id", async (req, res) => {
       .status(500)
       .send({ success: false, message: "Error", error: error.message });
   }
-
-  res.json({ status: "Provider Deleted" });
 });
 
 module.exports = router;
