@@ -56,8 +56,11 @@ router.put("/:id", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
     await saveAuditModel("Pedido a proveedor Actualizado", _id);
-    await OrderProvider.findByIdAndUpdate(req.params.id, { ...req.body });
-
+    const data = {
+      provider: req.body.provider._id,
+      products: req.body.products,
+    };
+    await OrderProvider.findByIdAndUpdate(req.params.id, data);
     const orderProviders = await OrderProvider.find();
 
     return res.status(201).send({
