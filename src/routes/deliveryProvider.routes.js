@@ -2,28 +2,28 @@ const express = require("express");
 const router = express.Router();
 const { saveAuditModel, decodedToken } = require("../utils");
 
-const Category = require("../models/category");
+const deliveryProvider = require("../models/deliveryProvider");
 
 router.get("/", async (req, res) => {
-  const categoryList = await Category.find();
+  const deliveryList = await deliveryProvider.find();
 
-  return res.json(categoryList);
+  return res.json(deliveryList);
 });
 
 router.delete("/:id", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
 
-    await Category.findByIdAndRemove(req.params.id);
+    await deliveryProvider.findByIdAndRemove(req.params.id);
 
-    await saveAuditModel("Categoria Borrada", _id);
+    await saveAuditModel("Entrega Borrada", _id);
 
-    const categories = await Category.find();
+    const deliveries = await deliveryProvider.find();
 
     return res.status(201).send({
       success: true,
-      message: "Categoria Borrada",
-      data: categories,
+      message: "Entrega Borrada",
+      data: deliveries,
     });
   } catch (error) {
     return res
@@ -36,21 +36,15 @@ router.put("/:id", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
 
-    const data = {
-      name: req.body.name,
-      description: req.body.description,
-      updatedBy: _id,
-    };
+    await deliveryProvider.findByIdAndUpdate(req.params.id, { ...req.body });
 
-    await Category.findByIdAndUpdate(req.body._id, data);
-
-    const categories = await Category.find();
-    await saveAuditModel("categoria Actualizada", _id);
+    const deliveries = await deliveryProvider.find();
+    await saveAuditModel("Entrega Actualizada", _id);
 
     return res.status(201).send({
       success: true,
-      message: "Categoria Actualizada",
-      data: categories,
+      message: "Entrega Actualizada",
+      data: deliveries,
     });
   } catch (error) {
     return res
@@ -63,17 +57,17 @@ router.post("/", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
 
-    const category = new Category({ ...req.body, createdBy: _id });
+    const delivery = new deliveryProvider({ ...req.body, createdBy: _id });
 
-    await category.save();
+    await delivery.save();
 
     await saveAuditModel("Categoria Creada", _id);
 
-    const categories = await Category.find();
+    const deliveries = await deliveryProvider.find();
 
     return res
       .status(201)
-      .send({ success: true, message: "Categoria Creada", data: categories });
+      .send({ success: true, message: "Entrega Creada", data: deliveries });
   } catch (error) {
     return res
       .status(500)
