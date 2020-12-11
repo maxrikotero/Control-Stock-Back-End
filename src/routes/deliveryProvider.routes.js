@@ -4,6 +4,27 @@ const { saveAuditModel, decodedToken } = require("../utils");
 
 const deliveryProvider = require("../models/deliveryProvider");
 
+// RawMaterialMovement Model
+const RawMaterialMovement = require("../models/rawMaterialMovement");
+
+// Provider Model
+const OrderProvider = require("../models/orderProvider");
+
+// RawMaterial Model
+const RawMaterial = require("../models/rawMaterial");
+
+const increaseStock = async (_id, _quality) => {
+  const product = await RawMaterial.findById(_id);
+  RawMaterial.findByIdAndUpdate(
+    _id,
+    {
+      stock: product.stock + parseInt(_quality, 10),
+    },
+    { new: true },
+    (err, product) => {}
+  );
+};
+
 router.get("/", async (req, res) => {
   const deliveryList = await deliveryProvider.find();
 
@@ -16,7 +37,7 @@ router.delete("/:id", async (req, res) => {
 
     await deliveryProvider.findByIdAndRemove(req.params.id);
 
-    await saveAuditModel("Entrega Borrada", _id);
+    await saveAuditModel("Pedido Borrada", _id);
 
     const deliveries = await deliveryProvider.find();
 
@@ -39,11 +60,11 @@ router.put("/:id", async (req, res) => {
     await deliveryProvider.findByIdAndUpdate(req.params.id, { ...req.body });
 
     const deliveries = await deliveryProvider.find();
-    await saveAuditModel("Entrega Actualizada", _id);
+    await saveAuditModel("Pedido Actualizado", _id);
 
     return res.status(201).send({
       success: true,
-      message: "Entrega Actualizada",
+      message: "Pedido Actualizado",
       data: deliveries,
     });
   } catch (error) {
@@ -61,13 +82,30 @@ router.post("/", async (req, res) => {
 
     await delivery.save();
 
-    await saveAuditModel("Categoria Creada", _id);
+    await OrderProvider.findByIdAndUpdate(req.body.orderId, {
+      isDelivery: true,
+    });
+
+    req.body.products.map(async (item) => {
+      increaseStock(item.product, item.amount);
+
+      const movement = new RawMaterialMovement({
+        rawMaterial: item.product._id,
+        input: true,
+        quality: item.amount,
+        createdBy: _id,
+      });
+
+      await movement.save();
+    });
+
+    await saveAuditModel("Pedido Pagado", _id);
 
     const deliveries = await deliveryProvider.find();
 
     return res
       .status(201)
-      .send({ success: true, message: "Entrega Creada", data: deliveries });
+      .send({ success: true, message: "Pedido Pagado", data: deliveries });
   } catch (error) {
     return res
       .status(500)

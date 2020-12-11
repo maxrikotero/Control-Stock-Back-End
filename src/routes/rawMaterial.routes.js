@@ -138,7 +138,7 @@ router.put("/:id", async (req, res) => {
       return res.status(201).send({
         success: true,
         message: "Materia Prima Actualizada",
-        data: [],
+        data: rawMaterials,
       });
     }
   } catch (error) {

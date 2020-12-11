@@ -23,6 +23,25 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/orderDelivery", async (req, res) => {
+  try {
+    const orderProviders = await OrderProvider.find({
+      $or: [{ isDelivery: false }, { isDelivery: null }],
+    })
+      .populate({
+        path: "provider",
+        select: "_id name",
+      })
+      .populate({
+        path: "products",
+        populate: { path: "product", select: "_id name" },
+      });
+    res.json(orderProviders);
+  } catch (error) {
+    return res.status(500).send({ message: "Error", error: error.message });
+  }
+});
+
 // GET Order Provider
 router.get("/:id", async (req, res) => {
   try {

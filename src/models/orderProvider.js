@@ -3,6 +3,7 @@ const { Schema } = mongoose;
 
 const OrderProviderSchema = new Schema({
   provider: { type: mongoose.Schema.Types, ref: "Provider" },
+  isDelivery: { type: Boolean, default: false },
   products: [
     {
       amount: Number,
