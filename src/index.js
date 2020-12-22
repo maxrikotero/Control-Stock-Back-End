@@ -30,6 +30,7 @@ app.use("/api/process", require("./routes/process.routes"));
 app.use("/api/rawmaterial", require("./routes/rawMaterial.routes"));
 app.use("/api/orders", require("./routes/orderProvider.routes"));
 app.use("/api/delivery", require("./routes/deliveryProvider.routes"));
+app.use("/api/dailyentry", require("./routes/dailyEntry.routes"));
 
 app.get("/api/fetch-pdf/:id", (req, res) => {
   res.sendFile(

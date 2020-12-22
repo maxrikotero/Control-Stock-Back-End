@@ -7,14 +7,17 @@ const Balance = require("../models/balance");
 
 // GET all Balance
 router.get("/", async (req, res) => {
-  const payments = await Balance.find();
-  res.json(payments);
+  const balances = await Balance.find({ isOpen: false }).populate({
+    path: "createdBy",
+    select: "_id firstName lastName",
+  });
+  res.json(balances);
 });
 
 // GET Balance
 router.get("/:id", async (req, res) => {
-  const payment = await Balance.findById(req.params.id);
-  res.json(payment);
+  const balance = await Balance.findById(req.params.id);
+  res.json(balance);
 });
 
 // ADD a new Payment
@@ -26,7 +29,9 @@ router.post("/", async (req, res) => {
 
     await saveAuditModel("Caja guardada", _id);
 
-    return res.status(201).send({ success: true, message: "Caja guardada" });
+    return res
+      .status(201)
+      .send({ success: true, message: "Caja guardada", data: balance });
   } catch (error) {
     console.log(error.message);
     return res.status(500).send({ message: "Error", error: error.message });
@@ -37,19 +42,20 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
+    await Balance.findByIdAndUpdate(req.params.id, {
+      ...req.body,
+    });
 
-    await Balance.findByIdAndUpdate(req.params.id, { ...req.body });
-
+    const balance = await Balance.findById(req.params.id);
     await saveAuditModel("Caja Actualizada", _id);
-
-    const payments = await Balance.find();
 
     return res.status(201).send({
       success: true,
       message: "Caja actualizada",
-      data: payments,
+      data: balance,
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).send({ message: "Error", error: error.message });
   }
 });
@@ -62,12 +68,12 @@ router.delete("/:id", async (req, res) => {
 
     await saveAuditModel("Caja Eliminada", _id);
 
-    const payments = await Balance.find();
+    const balances = await Balance.find();
 
     return res.status(201).send({
       success: true,
       message: "Caja eliminada",
-      data: payments,
+      data: balances,
     });
   } catch (error) {
     return res
