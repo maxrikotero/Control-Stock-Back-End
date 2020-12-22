@@ -10,13 +10,16 @@ const ProductMovement = require("../models/productMovement");
 
 // GET all Products
 router.get("/", async (req, res) => {
-  const products = await Product.find({ isRawMaterial: false });
+  const products = await Product.find().populate({
+    path: "prices",
+    populate: { path: "priceType", select: "_id name" },
+  });
   res.json(products);
 });
 
 // GET all Raw Material
 router.get("/rawmaterial", async (req, res) => {
-  const products = await Product.find({ isRawMaterial: true });
+  const products = await Product.find();
 
   res.json(products);
 });
@@ -24,13 +27,24 @@ router.get("/rawmaterial", async (req, res) => {
 // Search products
 router.get("/search", async (req, res) => {
   const { query: value } = req.query;
-  const products = await Product.find({ code: parseInt(value, 10) });
+  const products = await Product.find({ code: parseInt(value, 10) }).populate({
+    path: "prices",
+    populate: { path: "priceType", select: "_id name" },
+  });
   return res.json({ products });
 });
 
 // GET product
 router.get("/:id", async (req, res) => {
-  const product = await Product.findById(req.params.id);
+  const product = await Product.findById(req.params.id)
+    .populate({
+      path: "prices",
+      select: "_id name",
+    })
+    .populate({
+      path: "category",
+      select: "_id name",
+    });
   res.json(product);
 });
 
@@ -51,6 +65,7 @@ router.post("/", async (req, res) => {
       ...req.body,
       createdBy: _id,
     });
+
     const newProduct = await product.save();
 
     const movement = new ProductMovement({
@@ -66,7 +81,7 @@ router.post("/", async (req, res) => {
     return res.status(201).send({
       success: true,
       message: "Nuevo Producto Creado",
-      data: newProduct,
+      data: {},
     });
   } catch (error) {
     return res
@@ -87,7 +102,7 @@ router.put("/:id", async (req, res) => {
         code: req.body.code,
         name: req.body.name,
         brand: req.body.brand,
-        price: req.body.price,
+        prices: req.body.prices,
         stock: req.body.stock,
         minStock: req.body.minStock,
         category: req.body.category,
@@ -95,27 +110,28 @@ router.put("/:id", async (req, res) => {
         description: req.body.description,
       };
 
-      const updatedProduct = await Product.findOneAndUpdate(
-        { _id: req.body._id },
-        update
-      );
+      await Product.findOneAndUpdate({ _id: req.body._id }, update);
 
       const decreseStock = product.stock <= req.body.countInStock;
 
-      const movement = new ProductMovement({
-        product: req.body._id,
-        input: !decreseStock,
-        output: decreseStock,
-        isUpdated: true,
-        quality: req.body.stock,
-        createdBy: _id,
-      });
+      const updateStock = product.stock !== req.body.countInStock;
 
-      await movement.save();
+      if (updateStock) {
+        const movement = new ProductMovement({
+          product: req.body._id,
+          input: !decreseStock,
+          output: decreseStock,
+          isUpdated: true,
+          quality: req.body.stock,
+          createdBy: _id,
+        });
+        await movement.save();
+      }
 
       await saveAuditModel("Producto Actualizado", _id);
 
       const products = await Product.find();
+
       return res.status(201).send({
         success: true,
         message: "Producto Actualizado",

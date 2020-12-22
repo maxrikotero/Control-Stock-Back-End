@@ -2,13 +2,13 @@ const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 const ProviderSchema = new Schema({
-  socialId: { type: String },
+  razonSocial: { type: String },
   dni: { type: Number },
   phone: { type: Number },
-  mobile: { type: Number },
   email: { type: String },
-  firstName: { type: String },
-  lastName: { type: String },
+  name: { type: String, required: true },
+  createdBy: { type: mongoose.Schema.Types, ref: "User" },
+  updatedBy: { type: mongoose.Schema.Types, ref: "User" },
 });
 
 module.exports = mongoose.model("Provider", ProviderSchema);

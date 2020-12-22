@@ -1,8 +1,11 @@
 const express = require("express");
 const router = express.Router();
+const { saveAuditModel, decodedToken } = require("../utils");
 
 // Provider Model
 const PriceType = require("../models/priceType");
+//Product Model
+const Product = require("../models/product");
 
 // GET all PriceTypes
 router.get("/", async (req, res) => {
@@ -20,7 +23,7 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
-    const priceType = new PriceType(...req.body);
+    const priceType = new PriceType({ ...req.body });
     await priceType.save();
 
     await saveAuditModel("Tipo de precio creado", _id);
@@ -38,7 +41,7 @@ router.put("/:id", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
     await saveAuditModel("Tipo de precio Actualizado", _id);
-    await PriceType.findByIdAndUpdate(req.params.id, ...req.body);
+    await PriceType.findByIdAndUpdate(req.params.id, { ...req.body });
 
     const priceTypes = await PriceType.find();
 
@@ -55,6 +58,21 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
+
+    const products = await Product.find();
+
+    var ids = products.reduce(
+      (acc, obj) => [...acc, obj.prices[0].priceType._id],
+      []
+    );
+
+    if (ids.some((id) => id == req.params.id)) {
+      return res.status(500).send({
+        success: false,
+        message: "Error",
+        error: "Hay Productos con este precio",
+      });
+    }
 
     await PriceType.findByIdAndRemove(req.params.id);
 

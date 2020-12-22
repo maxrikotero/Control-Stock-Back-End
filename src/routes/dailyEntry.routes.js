@@ -2,27 +2,27 @@ const express = require("express");
 const router = express.Router();
 const { saveAuditModel, decodedToken } = require("../utils");
 
-const Category = require("../models/category");
+const DailyEntry = require("../models/dailyEntry");
 
 router.get("/", async (req, res) => {
-  const categoryList = await Category.find();
+  const dailyEntryList = await DailyEntry.find();
 
-  return res.json(categoryList);
+  return res.json(dailyEntryList);
 });
 
 router.delete("/:id", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
 
-    await Category.findByIdAndRemove(req.params.id);
+    await DailyEntry.findByIdAndRemove(req.params.id);
 
-    await saveAuditModel("Categoria Borrada", _id);
+    await saveAuditModel("Daria Borrada", _id);
 
-    const categories = await Category.find();
+    const categories = await DailyEntry.find();
 
     return res.status(201).send({
       success: true,
-      message: "Categoria Borrada",
+      message: "Diaria Borrada",
       data: categories,
     });
   } catch (error) {
@@ -36,20 +36,15 @@ router.put("/:id", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
 
-    const data = {
-      name: req.body.name,
-      description: req.body.description,
-      updatedBy: _id,
-    };
+    await DailyEntry.findByIdAndUpdate(req.body._id, { ...req.body });
 
-    await Category.findByIdAndUpdate(req.body._id, data);
+    const categories = await DailyEntry.find();
 
-    const categories = await Category.find();
-    await saveAuditModel("categoria Actualizada", _id);
+    await saveAuditModel("Diaria Actualizada", _id);
 
     return res.status(201).send({
       success: true,
-      message: "Categoria Actualizada",
+      message: "Diaria Actualizada",
       data: categories,
     });
   } catch (error) {
@@ -63,17 +58,17 @@ router.post("/", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
 
-    const category = new Category({ ...req.body, createdBy: _id });
+    const dailyEntry = new DailyEntry({ ...req.body, createdBy: _id });
 
-    await category.save();
+    await dailyEntry.save();
 
-    await saveAuditModel("Categoria Creada", _id);
+    await saveAuditModel("Diaria Creada", _id);
 
-    const categories = await Category.find();
+    const categories = await DailyEntry.find();
 
     return res
       .status(201)
-      .send({ success: true, message: "Categoria Creada", data: categories });
+      .send({ success: true, message: "Diaria Creada", data: categories });
   } catch (error) {
     return res
       .status(500)

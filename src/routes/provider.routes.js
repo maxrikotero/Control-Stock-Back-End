@@ -3,11 +3,19 @@ const router = express.Router();
 
 // Provider Model
 const Provider = require("../models/provider");
+const { decodedToken } = require("../utils");
 
 // GET all Providers
 router.get("/", async (req, res) => {
   const providers = await Provider.find();
-  res.json(providers);
+
+  try {
+    return res.status(201).send({ success: true, data: providers });
+  } catch (error) {
+    return res
+      .status(500)
+      .send({ success: false, message: "Error", error: error.message });
+  }
 });
 
 // GET provider
@@ -18,32 +26,61 @@ router.get("/:id", async (req, res) => {
 
 // ADD a new provider
 router.post("/", async (req, res) => {
-  const { socialId, dni, firstName, lastName, phone, mobile, email } = req.body;
+  try {
+    const { _id } = decodedToken(req);
 
-  const provider = new Provider({
-    socialId,
-    dni,
-    phone,
-    mobile,
-    email,
-    firstName,
-    lastName,
-  });
-  await provider.save();
-  res.json({ status: "Provider Saved" });
+    const provider = new Provider({
+      ...req.body,
+      createdBy: _id,
+    });
+    await provider.save();
+
+    return res
+      .status(201)
+      .send({ success: true, message: "Proveedor Creado", data: [] });
+  } catch (error) {
+    return res
+      .status(500)
+      .send({ success: false, message: "Error", error: "error" });
+  }
 });
 
 // UPDATE a provider
 router.put("/:id", async (req, res) => {
-  const { socialId, dni, brand, phone, mobile, email } = req.body;
-  const newProvider = { socialId, dni, brand, phone, mobile, email };
-  await Provider.findByIdAndUpdate(req.params.id, newProvider);
-  res.json({ status: "Provider Updated" });
+  try {
+    const { _id } = decodedToken(req);
+
+    const providerUpdated = await Provider.findByIdAndUpdate(req.params.id, {
+      ...req.body,
+      updatedBy: _id,
+    });
+    return res.status(201).send({
+      success: true,
+      message: "Proveedor Actualizado",
+      data: providerUpdated,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .send({ success: false, message: "Error", error: error.message });
+  }
 });
 
 router.delete("/:id", async (req, res) => {
-  await Provider.findByIdAndRemove(req.params.id);
-  res.json({ status: "Provider Deleted" });
+  try {
+    const { _id } = decodedToken(req);
+
+    if (_id) await Provider.findByIdAndRemove(req.params.id);
+    else throw "Error";
+    return res.status(201).send({
+      success: true,
+      message: "Proveedor Borrado",
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .send({ success: false, message: "Error", error: error.message });
+  }
 });
 
 module.exports = router;

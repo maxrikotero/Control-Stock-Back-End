@@ -11,7 +11,6 @@ const Client = require("../models/client");
 const User = require("../models/user");
 
 const ProductMovement = require("../models/productMovement");
-const { request } = require("express");
 
 const decreaseStock = async (_id, _quality) => {
   const product = await Product.findById(_id);
@@ -29,7 +28,7 @@ const decreaseStock = async (_id, _quality) => {
 router.get("/", async (req, res) => {
   try {
     const sales = await Sale.find();
-    res.status(500).send({ success: true, data: sales });
+    res.status(200).send({ success: true, data: sales });
   } catch (error) {
     return res.status(500).send({ message: "Error", error });
   }
@@ -62,10 +61,19 @@ router.post("/", async (req, res) => {
     const { _id } = decodedToken(req);
 
     if (_id) {
+      const sales = await Sale.find();
+      const totalPrice = req.body.totalPrice;
+      const totalIva = totalPrice * 0.21;
+      const totalPriceIva = totalPrice + totalIva;
+
       const newSale = new Sale({
         products: req.body.products,
         user: _id,
+        billNumber: sales.length + 1,
+        paymentType: req.body.paymentType,
+        billType: req.body.billType,
         totalPrice: req.body.totalPrice,
+        totalIva: req.body.billType !== "1" ? totalPriceIva : totalPrice,
         client: req.body.client,
       });
 
@@ -90,7 +98,15 @@ router.post("/", async (req, res) => {
 
       const users = await User.find({ _id });
 
-      await createPdf(req.body, client, users, sale._id, sale, res);
+      await createPdf(
+        req.body,
+        client,
+        users,
+        sale._id,
+        sale,
+        res,
+        sales.length
+      );
     } else {
       return res.status(200).send({ message: " No autorizado." });
     }

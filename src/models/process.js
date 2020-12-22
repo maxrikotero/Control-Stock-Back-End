@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const PaymentSchema = new Schema({
+const ProcessSchema = new Schema({
   name: { type: String, required: true },
   description: { type: String },
   createdBy: { type: mongoose.Schema.Types, ref: "User" },
   createAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model("Payments", PaymentSchema);
+module.exports = mongoose.model("Process", ProcessSchema);
