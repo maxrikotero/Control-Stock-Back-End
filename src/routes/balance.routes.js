@@ -6,6 +6,15 @@ const { saveAuditModel, decodedToken } = require("../utils");
 const Balance = require("../models/balance");
 
 // GET all Balance
+router.get("/openbalance", async (req, res) => {
+  const balances = await Balance.find({ isOpen: true }).populate({
+    path: "createdBy",
+    select: "_id firstName lastName",
+  });
+  res.json(balances);
+});
+
+// GET all Balance
 router.get("/", async (req, res) => {
   const balances = await Balance.find({ isOpen: false }).populate({
     path: "createdBy",

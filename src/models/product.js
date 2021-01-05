@@ -23,7 +23,7 @@ const ProductSchema = new Schema({
       },
     },
   ],
-  expire: { type: Date, default: Date.now },
+  expires: [{ expire: Date, entryDate: Date, amount: Number }],
   category: { type: mongoose.Schema.Types, ref: "Category" },
   minStock: { type: Number, default: 0 },
   stock: { type: Number, default: 0, required: true },

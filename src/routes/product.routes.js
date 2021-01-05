@@ -94,27 +94,12 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
-
-    const product = await Product.findById(req.body._id);
-
+    const product = await Product.findById(req.params.id);
     if (product) {
-      const update = {
-        code: req.body.code,
-        name: req.body.name,
-        brand: req.body.brand,
-        prices: req.body.prices,
-        stock: req.body.stock,
-        minStock: req.body.minStock,
-        category: req.body.category,
-        expire: req.body.expire,
-        description: req.body.description,
-      };
+      await Product.findOneAndUpdate({ _id: req.params.id }, { ...req.body });
 
-      await Product.findOneAndUpdate({ _id: req.body._id }, update);
-
-      const decreseStock = product.stock <= req.body.countInStock;
-
-      const updateStock = product.stock !== req.body.countInStock;
+      const decreseStock = product.stock >= req.body.stock;
+      const updateStock = product.stock !== req.body.stock;
 
       if (updateStock) {
         const movement = new ProductMovement({
@@ -138,6 +123,10 @@ router.put("/:id", async (req, res) => {
         data: products,
       });
     }
+
+    return res
+      .status(500)
+      .send({ success: false, message: "Error", error: "error.message" });
   } catch (error) {
     return res
       .status(500)
