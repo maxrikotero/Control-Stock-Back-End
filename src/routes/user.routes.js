@@ -39,9 +39,8 @@ router.post("/signin", async (req, res) => {
         message: "Usuario no existe",
       });
     } else {
-      const validPassword = await user.validatePassword(password);
 
-      if (!validPassword)
+      if (password !== user.password)
         res.status(404).send({
           success: false,
           message: "Contraseña Invalida",
@@ -114,20 +113,18 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
-    const role = req.body.role;
-
+    const role = parseInt(req.body.role, 10);
     const roles = {
-      isAdmin: role === "Administrador",
-      isSeller: role === "Vendedor",
-      isControlStock: role === "Control de stock",
+      isAdmin: role === 1,
+      isSeller: role === 2,
+      isControlStock: role === 3,
+      isSecretary: role === 4,
     };
     const user = new User({
       ...req.body,
       createdBy: _id,
       ...roles,
     });
-
-    user.password = await user.encryptPassword(req.body.password);
 
     await user.save();
 

@@ -4,7 +4,7 @@
   "description": "this is a CRUD app example write with React, Node, Expres and Mongodb",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "nodemon src/index.js",
     "dev": "nodemon src/index.js",
     "webpack": "webpack --mode development --watch",
     "build": "webpack --mode production"
