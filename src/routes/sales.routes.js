@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
 const createPdf = require("../documents/ticket");
 const { saveAuditModel, decodedToken } = require("../utils");
 
@@ -57,10 +58,19 @@ router.get("/:id", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
+
   try {
     const { _id } = decodedToken(req);
-
     if (_id) {
+
+      const allProducts = await Product.find({
+        '_id': { $in: req.body.products.map(item => mongoose.Types.ObjectId(item.product))}
+      });
+
+      if(allProducts.some(p => req.body.products.find(pv => pv.product === p._id.toString() && parseInt(pv.quality, 10) > p.stock ) ) ){
+        return res.status(500).send({ message: "No hay stock suficiente", error: error.message });
+      }
+
       const sales = await Sale.find();
       const totalPrice = req.body.totalPrice;
       const totalIva = totalPrice * 0.21;
@@ -76,6 +86,8 @@ router.post("/", async (req, res) => {
         totalIva: req.body.billType !== "1" ? totalPriceIva : totalPrice,
         client: req.body.client,
       });
+
+      
 
       req.body.products.map(async (item) => {
         decreaseStock(item.product, item.quality);
