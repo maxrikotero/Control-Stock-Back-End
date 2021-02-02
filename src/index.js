@@ -8,6 +8,8 @@ const app = express();
 
 // Db connection
 const { mongoose } = require("./database");
+// const URI = "mongodb://127.0.0.1:27017/marisadb";
+// mongoose.connect(URI, { replicaSet: "rs" });
 
 // Settings
 app.set("port", process.env.PORT || 3000);
@@ -31,6 +33,7 @@ app.use("/api/rawmaterial", require("./routes/rawMaterial.routes"));
 app.use("/api/orders", require("./routes/orderProvider.routes"));
 app.use("/api/delivery", require("./routes/deliveryProvider.routes"));
 app.use("/api/dailyentry", require("./routes/dailyEntry.routes"));
+app.use("/api/pricemovement", require("./routes/priceMovement.routes"));
 
 app.get("/api/fetch-pdf/:id", (req, res) => {
   res.sendFile(

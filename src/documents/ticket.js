@@ -33,248 +33,289 @@ const htmlStructure = ({ client, users, sale, body, salesCount }) => {
   return `
   <!DOCTYPE html>
   <html lang="en">
-    <head>
-      <meta charset="UTF-8" />
-      <title>Factura</title>
-      <style>
-      @import url('fonts/BrixSansRegular.css');
-@import url('fonts/BrixSansBlack.css');
-
-*{
-	margin: 0;
-	padding: 0;
-	box-sizing: border-box;
-}
-p, label, span, table{
-	font-family: 'BrixSansRegular';
-	font-size: 9pt;
-}
-.h2{
-	font-family: 'BrixSansBlack';
-	font-size: 16pt;
-}
-.h3{
-	font-family: 'BrixSansBlack';
-	font-size: 12pt;
-	display: block;
-	background: #9092A6;
-	color: #FFF;
-	text-align: center;
-	padding: 3px;
-	margin-bottom: 5px;
-}
-#page_pdf{
-	width: 95%;
-	margin: 15px auto 10px auto;
-}
-
-#factura_head, #factura_cliente, #factura_detalle{
-	width: 100%;
-	margin-bottom: 10px;
-}
-.logo_factura{
-	width: 25%;
-}
-.info_empresa{
-	width: 23%;
-	text-align: center;
-}
-.info_factura{
-	width: 25%;
-}
-.info_cliente{
-	width: 100%;
-}
-.datos_cliente{
-	width: 100%;
-}
-.datos_cliente tr td{
-	width: 50%;
-}
-.datos_cliente{
-	padding: 10px 10px 0 10px;
-}
-.datos_cliente label{
-	width: 75px;
-	display: inline-block;
-}
-.datos_cliente p{
-	display: inline-block;
-}
-
-.textright{
-	text-align: right;
-}
-.textleft{
-	text-align: left;
-}
-.textcenter{
-	text-align: center;
-}
-.round{
-	border-radius: 10px;
-	border: 1px solid #9092A6;
-	overflow: hidden;
-	padding-bottom: 15px;
-}
-.round p{
-	padding: 0 15px;
-}
-
-#factura_detalle{
-	border-collapse: collapse;
-}
-#factura_detalle thead th{
-	background: #45454F;
-	color: #FFF;
-	padding: 5px;
-}
-#detalle_productos tr:nth-child(even) {
-    background: #ededed;
-}
-
-#detalle_totales  {
-  margin-top: 50px
-}
-#detalle_totales span{
-	font-family: 'BrixSansBlack';
-}
-.nota{
-	font-size: 8pt;
-}
-.label_gracias{
-	font-family: verdana;
-	font-weight: bold;
-	font-style: italic;
-	text-align: center;
-	margin-top: 20px;
-}
-.anulada{
-	position: absolute;
-	left: 50%;
-	top: 50%;
-	transform: translateX(-50%) translateY(-50%);
-}
-      </style>
-    </head>
-    <body>
-      <div id="page_pdf">
-        <table id="factura_head">
-          <tr>
-            <td class="logo_factura">
-              <img src=${logo} />           
-            </td>
-            <td class="info_empresa">
-            ${billTypeText}
-            </td>
-            <td class="info_factura">
-              <div class="round">
-                <span class="h3">Factura</span>
-                <p>No. Factura: ${salesCount}<strong></strong></p>
-                <p>Fecha: ${`${day}-0${month}-${year}`}</p>
-                <p>Hora: ${date.getHours() + ":" + date.getMinutes()}</p>
-                <p>Vendedor: ${firstName + " " + lastName}</p>
+     <head>
+        <meta charset="UTF-8" />
+        <title>Factura</title>
+        <style>
+           /* @import url("fonts/BrixSansRegular.css");
+           @import url("fonts/BrixSansBlack.css"); */
+           * {
+           margin: 0;
+           padding: 0;
+           box-sizing: border-box;
+           font-family: Arial, Helvetica, sans-serif;
+           }
+           p,
+           label,
+           span,
+           table {
+           font-size: 9pt;
+           }
+           .h2 {
+           font-size: 16pt;
+           }
+           .h3 {
+           font-size: 12pt;
+           display: block;
+           background: #9092a6;
+           color: #fff;
+           text-align: center;
+           padding: 3px;
+           margin-bottom: 5px;
+           }
+           #page_pdf {
+           width: 95%;
+           margin: 15px auto 10px auto;
+           }
+           #factura_head,
+           #factura_cliente,
+           #factura_detalle {
+           width: 100%;
+           margin-bottom: 10px;
+           }
+           .logo_factura {
+           width: 7%;
+           }
+           .info_empresa {
+           width: 23%;
+           text-align: center;
+           }
+           .info_factura {
+           width: 25%;
+           }
+           .info_cliente {
+           width: 100%;
+           }
+           .datos_cliente {
+           width: 100%;
+           }
+           .datos_cliente tr td {
+           width: 50%;
+           }
+           .datos_cliente {
+           padding: 10px 10px 0 10px;
+           }
+           .datos_cliente label {
+           width: 75px;
+           display: inline-block;
+           }
+           .datos_cliente p {
+           display: inline-block;
+           }
+           .textright {
+           text-align: right;
+           }
+           .textleft {
+           text-align: left;
+           }
+           .textcenter {
+           text-align: center;
+           }
+           .round {
+           border-radius: 10px;
+           border: 1px solid #9092a6;
+           overflow: hidden;
+           padding-bottom: 15px;
+           }
+           .round p {
+           padding: 0 15px;
+           }
+           #factura_detalle {
+           border-collapse: collapse;
+           }
+           #factura_detalle thead th {
+           background: #000;
+           color: #fff;
+           padding: 5px;
+           }
+           #detalle_productos tr:nth-child(even) {
+           background: #ededed;
+           }
+           #detalle_totales {
+           margin-top: 50px;
+           }
+           #detalle_totales span {
+           }
+           .nota {
+           font-size: 8pt;
+           }
+           .label_gracias {
+           font-family: verdana;
+           font-weight: bold;
+           font-style: italic;
+           text-align: center;
+           margin-top: 20px;
+           }
+           .anulada {
+           position: absolute;
+           left: 50%;
+           top: 50%;
+           transform: translateX(-50%) translateY(-50%);
+           }
+           #bus_info p {
+           margin-bottom: 0.5rem;
+           }
+           #bill_info p {
+           margin-bottom: 0.5rem;
+           }
+           #bill_info > p > strong {
+           font-weight: 900;
+           }
+        </style>
+     </head>
+     <body>
+        <div style="border: 1px solid; margin: 20px 18px 0;border-radius:3px">
+           <div style="
+              display: flex;
+              ">
+              <div style="height: 150px;padding: 10px">
+                 <img style="width: 150px";
+                    src=${logo}   
+                    />
               </div>
-            </td>
-          </tr>
-        </table>
-        <table id="factura_cliente">
-          <tr>
-            <td class="info_cliente">
-              <div class="round">
-                <span class="h3">Cliente</span>
-                <table class="datos_cliente">
-                  <tr>
-                    <td>
-                      <label>Nit:</label>
-                      <p>${cuil}</p>
-                    </td>
-                    <td>
-                      <label>Teléfono:</label>
-                      <p>${phone}</p>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <label>Nombre:</label>
-                      <p>${name}</p>
-                    </td>
-                    <td>
-                      <label>Dirección:</label>
-                      <p>${address}</p>
-                    </td>
-                  </tr>
-                </table>
+              <div style="border: 1px solid;
+                 height: 65px;
+                 width: 100px;
+                 /* display: flex; */
+                 text-align: center;
+                 position: relative;
+                 top: 40px;
+                 left: 60%;
+                 border-radius: 3px;
+                 box-shadow: blueviolet;
+                 box-shadow: 1px 1px 1px 0px #888888;">
+                 <h1 style="    position: relative;
+                    top: 20%;">${billTypeText}</h1>
               </div>
-            </td>
-          </tr>
-        </table>
-  
-        <table id="factura_detalle">
-          <thead>
-            <tr>
-              <th width="150px">Producto</th>  
-              <th width="150px">Cantidad</th>
-              <th class="textright" width="150px">Precio Unitario.</th>
-              <th class="textright" width="150px">Precio Total</th>
-            </tr>
-          </thead>
-          <tbody id="detalle_productos">
-         
-          ${products.map((product) => {
-            return ` <tr>
-            <td class="textcenter">${product.name}</td>
-            <td class="textcenter">${product.quality}</td>
-            <td class="textcenter">${product.price}</td>
-            <td class="textcenter">${product.price * product.quality}</td>
-            </tr> `;
-          })}
-          
-          </tbody>
-        </table>
-        <div id="detalle_totales">
-        <table id="factura_detalle">
-        <tr>
-          <td colspan="3" class="textright"><span>Sub Total</span></td>
-          <td class="textright">
-            <span>${totalPrice}</span>
-          </td>
-        </tr>
-        <tr>
-        <td colspan="3" class="textright"><span>
-        IVA</span></td>
-        <td class="textright">
-          <span>${billType !== "1" ? totalIva : 0}</span>
-        </td>
-      </td>
-      </tr>
-      <tr>
-      <td colspan="3" class="textright"><span>
-      Total</span></td>
-      <td class="textright">
-        <span>${totalPriceIva}</span>
-      </td>
-      </tr>
+           </div>
+           <div style="display: flex; padding: 0px 0px 15px 15px;">
+              <div id="bus_info" style="width: 50%;">
+                 <p><strong style="font-weight: 900;">Domicilio:</strong> Cuyo 3532</p>
+                 <p><strong style="font-weight: 900;">CP.:</strong> Cuyo 3532</p>
+                 <p><strong style="font-weight: 900;">Tel.</strong> 2821-7200</p>
+                 <p><strong style="font-weight: 900;">Domicilio</strong>: Cuyo 3532</p>
+                 <p>IVA Responsable Inscripto</p>
+              </div>
+              <div id="bill_info">
+                 <h3 style="margin-bottom: 5px;">Factura</h3>
+                 <p>
+                 <h4>N°: ${salesCount}</h4>
+                 </p>
+                 <p><strong style="font-weight: 900;">Fecha:</strong> ${`${day}-0${month}-${year}`}</p>
+                 <p><strong style="font-weight: 900;">Hora:</strong> ${
+                   date.getHours() + ":" + date.getMinutes()
+                 }</p>
+                 <p><strong style="font-weight: 900;">Vendedor:</strong> ${
+                   firstName + " " + lastName
+                 }</p>
+              </div>
+           </div>
         </div>
-      </div>
-      <div>
-    </div>
-    </body>
+        <div style="border: 1px solid; margin: 0px 18px -1px;border-radius:3px">
+           <div style="
+              display: flex;
+              ">
+              <div style="display: flex; padding: 15px 0px 15px 15px;width:100%">
+                 <div id="bill_info" style="width:50%">
+                    <p><strong style="font-weight: 900;">Cuil:</strong> ${cuil}</p>
+                    <p><strong style="font-weight: 900;">Teléfono:</strong>${phone}</p>
+                    <p><strong style="font-weight: 900;">Vendedor:</strong> Maximiliano orellana</p>
+                 </div>
+                 <div id="bill_info" style="width:50%">
+                    <p><strong style="font-weight: 900;">Nombre:</strong> ${name}</p>
+                    <p><strong style="font-weight: 900;">Dirección:</strong> ${address}</p>
+                 </div>
+              </div>
+           </div>
+        </div>
+        <div style="margin: 19px;">
+           <table id="factura_detalle">
+              <thead>
+                 <tr>
+                    <th width="150px">Producto</th>
+                    <th width="150px">Cantidad</th>
+                    <th class="textright" width="150px">Precio Unitario.</th>
+                    <th class="textright" width="150px">Precio Total</th>
+                 </tr>
+              </thead>
+              <tbody id="detalle_productos">
+                 ${products.map((product) => {
+                   return ` 
+                 <tr>
+                    <td class="textcenter">
+                       <div style="margin: 10px;font-size: 14px;">${
+                         product.name
+                       }</div>
+                    </td>
+                    <td class="textcenter">
+                       <div style="margin: 10px;font-size: 14px;">${
+                         product.quality
+                       }</div>
+                    </td>
+                    <td class="textcenter">
+                       <div style="margin: 10px;font-size: 14px;">${
+                         product.price
+                       }</div>
+                    </td>
+                    <td class="textcenter">
+                       <div style="margin: 10px;font-size: 14px;">${
+                         product.price * product.quality
+                       }</div>
+                    </td>
+                 </tr>
+                 `;
+                 })}
+              </tbody>
+           </table>
+        </div>
+        <div style="margin: 19px;">
+           <table id="factura_detalle">
+              <tr>
+                 <td colspan="3" class="textright">
+                    <p><strong style="font-weight: 900;">Sub Total</strong></p>
+                 </td>
+                 <td class="textright">
+                    <span style="font-size: 18px;">${totalPrice}</span>
+                 </td>
+              </tr>
+              <tr>
+                 <td colspan="3" class="textright"><strong style="font-weight: 900;"><span style="font-size: 14px;">
+                    IVA</span></strong>
+                 </td>
+                 <td class="textright">
+                    <span style="font-size: 18px;">${
+                      billType !== "1" ? totalIva : 0
+                    }</span>
+                 </td>
+                 </td>
+              </tr>
+              <tr>
+                 <td colspan="3" class="textright"><span style="font-size: 14px;">
+                    Total</span>
+                 </td>
+                 <td class="textright">
+                    <span style="font-size: 18px;">${totalPriceIva}</span>
+                 </td>
+              </tr>
+           </table>
+        </div>
+     </body>
   </html>
     `;
 };
 
 const createPdf = async (body, client, users, _id, sale, res, salesCount) => {
-  await pdf
-    .create(htmlStructure({ client, users, sale, body, salesCount }), {})
-    .toFile(`${__dirname}/tickets/sale${_id}.pdf`, (err) => {
-      if (err) {
-        return res.status(500).send({ message: "Error", error: error });
-      }
-      return res
-        .status(500)
-        .send({ success: true, message: "Venta Generada", data: sale });
-    });
+  console.log(htmlStructure({ client, users, sale, body, salesCount }));
+  // await pdf
+  //   .create(htmlStructure({ client, users, sale, body, salesCount }), {})
+  //   .toFile(`${__dirname}/tickets/sale${_id}.pdf`, (err) => {
+  //     if (err) {
+  //       return res.status(500).send({ message: "Error", error: error });
+  //     }
+  //     return res
+  //       .status(500)
+  //       .send({ success: true, message: "Venta Generada", data: sale });
+  //   });
 };
 
 module.exports = createPdf;

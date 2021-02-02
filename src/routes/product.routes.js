@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
 const { saveAuditModel, decodedToken } = require("../utils");
 
 // Product Model
@@ -7,6 +8,8 @@ const Product = require("../models/product");
 
 // ProductMovement Model
 const ProductMovement = require("../models/productMovement");
+
+const PriceMovement = require("../models/priceMovement");
 
 // GET all Products
 router.get("/", async (req, res) => {
@@ -94,8 +97,36 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
+    // const session = await mongoose.startSession();
+
+    // await session.startTransaction();
+
     const product = await Product.findById(req.params.id);
+    const { prices = [] } = req.body || {};
+
     if (product) {
+      let goToMovement = [];
+      product.prices.some((pb) => {
+        const checkedMovement = prices.filter(
+          (p) => p.priceType === pb.priceType.toString() && p.price !== pb.price
+        );
+        if (checkedMovement.length > 0) {
+          try {
+            goToMovement = [...goToMovement, pb];
+          } catch (error) {
+            console.log(error);
+          }
+        }
+      });
+      if (goToMovement.length > 0) {
+        const movement = new PriceMovement({
+          product: product._id,
+          prices: goToMovement,
+          createdBy: _id,
+        });
+        movement.save();
+      }
+
       await Product.findOneAndUpdate({ _id: req.params.id }, { ...req.body });
 
       const decreseStock = product.stock >= req.body.stock;
@@ -117,6 +148,9 @@ router.put("/:id", async (req, res) => {
 
       const products = await Product.find();
 
+      //   // await session.commitTransaction();
+      //   // session.endSession();
+
       return res.status(201).send({
         success: true,
         message: "Producto Actualizado",
@@ -128,6 +162,8 @@ router.put("/:id", async (req, res) => {
       .status(500)
       .send({ success: false, message: "Error", error: "error.message" });
   } catch (error) {
+    // await session.abortTransaction();
+    // session.endSession();
     return res
       .status(500)
       .send({ success: false, message: "Error", error: error.message });

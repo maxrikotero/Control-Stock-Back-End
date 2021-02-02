@@ -1,14 +1,6 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const pricesSchema = new mongoose.Schema({
-  price: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "PriceType",
-    required: true,
-  },
-});
-
 const ProductSchema = new Schema({
   code: { type: Number, default: 0, required: true, unique: true },
   name: { type: String, required: true, unique: true },
