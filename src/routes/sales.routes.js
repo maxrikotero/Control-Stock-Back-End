@@ -28,7 +28,10 @@ const decreaseStock = async (_id, _quality) => {
 
 router.get("/", async (req, res) => {
   try {
-    const sales = await Sale.find();
+    const sales = await Sale.find().populate({
+      path: "products",
+      populate: { path: "product"},
+    });
     res.status(200).send({ success: true, data: sales });
   } catch (error) {
     return res.status(500).send({ message: "Error", error });
@@ -124,6 +127,28 @@ router.post("/", async (req, res) => {
     }
   } catch (error) {
     return res.status(500).send({ message: "Error", error: error.message });
+  }
+});
+
+router.put("/:id", async (req, res) => {
+  try {
+    const { _id } = decodedToken(req);
+
+    const sale = await Sale.findById(req.params.id);
+
+    if(sale){
+
+     await Sale.findOneAndUpdate({_id: req.params.id}, {$set: req.body});
+      res.status(200).send({
+        success: true,
+        message: 'Venta actualizada exitosamente.'
+      })
+    }
+   
+  } catch (error) {
+    return res
+      .status(500)
+      .send({ success: false, message: "Error", error: error.message });
   }
 });
 
