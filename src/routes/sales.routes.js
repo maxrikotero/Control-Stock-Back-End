@@ -140,4 +140,24 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.put("/:id", async (req, res) => {
+  try {
+    const { _id } = decodedToken(req);
+
+    const sale = await Sale.findById(req.params.id);
+
+    if (sale) {
+      await Sale.findOneAndUpdate({ _id: req.params.id }, { $set: req.body });
+      res.status(200).send({
+        success: true,
+        message: "Venta actualizada exitosamente.",
+      });
+    }
+  } catch (error) {
+    return res
+      .status(500)
+      .send({ success: false, message: "Error", error: error.message });
+  }
+});
+
 module.exports = router;
