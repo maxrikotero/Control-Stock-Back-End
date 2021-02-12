@@ -13,7 +13,9 @@ const PriceMovement = require("../models/priceMovement");
 
 // GET all Products
 router.get("/", async (req, res) => {
-  const products = await Product.find().populate({
+  const products = await Product.find({
+    isDeleted: { $ne: true },
+  }).populate({
     path: "prices",
     populate: { path: "priceType", select: "_id name" },
   });
@@ -22,7 +24,9 @@ router.get("/", async (req, res) => {
 
 // GET all Raw Material
 router.get("/rawmaterial", async (req, res) => {
-  const products = await Product.find();
+  const products = await Product.find({
+    isDeleted: { $ne: true },
+  });
 
   res.json(products);
 });
@@ -30,7 +34,10 @@ router.get("/rawmaterial", async (req, res) => {
 // Search products
 router.get("/search", async (req, res) => {
   const { query: value } = req.query;
-  const products = await Product.find({ code: parseInt(value, 10) }).populate({
+  const products = await Product.find({
+    code: parseInt(value, 10),
+    isDeleted: { $ne: true },
+  }).populate({
     path: "prices",
     populate: { path: "priceType", select: "_id name" },
   });
@@ -97,9 +104,6 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
-    // const session = await mongoose.startSession();
-
-    // await session.startTransaction();
 
     const product = await Product.findById(req.params.id);
     const { prices = [] } = req.body || {};
@@ -114,7 +118,11 @@ router.put("/:id", async (req, res) => {
           try {
             goToMovement = [...goToMovement, pb];
           } catch (error) {
-            console.log(error);
+            return res.status(500).send({
+              success: false,
+              message: "Error movimiento precios",
+              error: "Error movimiento precios",
+            });
           }
         }
       });
@@ -146,10 +154,7 @@ router.put("/:id", async (req, res) => {
 
       await saveAuditModel("Producto Actualizado", _id);
 
-      const products = await Product.find();
-
-      //   // await session.commitTransaction();
-      //   // session.endSession();
+      const products = await Product.find({ isDeleted: { $ne: true } });
 
       return res.status(201).send({
         success: true,
@@ -162,8 +167,6 @@ router.put("/:id", async (req, res) => {
       .status(500)
       .send({ success: false, message: "Error", error: "error.message" });
   } catch (error) {
-    // await session.abortTransaction();
-    // session.endSession();
     return res
       .status(500)
       .send({ success: false, message: "Error", error: error.message });
@@ -174,9 +177,18 @@ router.delete("/:id", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
 
-    const deletedProduct = await Product.findById(req.params.id);
+    // const deletedProduct = await Product.findById(req.params.id);
 
-    if (deletedProduct) await deletedProduct.remove();
+    await Product.findOneAndUpdate(
+      { _id: req.params.id },
+      {
+        deletedAt: new Date(),
+        isDeleted: true,
+        deletedBy: _id,
+      }
+    );
+
+    // if (deletedProduct) await deletedProduct.remove();
 
     await saveAuditModel("Producto Eliminado", _id);
 

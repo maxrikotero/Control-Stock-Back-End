@@ -5,7 +5,7 @@ const { saveAuditModel, decodedToken } = require("../utils");
 const Category = require("../models/category");
 
 router.get("/", async (req, res) => {
-  const categoryList = await Category.find();
+  const categoryList = await Category.find({ isDeleted: { $ne: true } });
 
   return res.json(categoryList);
 });
@@ -14,11 +14,19 @@ router.delete("/:id", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
 
-    await Category.findByIdAndRemove(req.params.id);
+    await Category.findOneAndUpdate(
+      { _id: req.params.id },
+      {
+        deletedAt: new Date(),
+        isDeleted: true,
+        deletedBy: _id,
+      }
+    );
+    // await Category.findByIdAndRemove(req.params.id);
 
     await saveAuditModel("Categoria Borrada", _id);
 
-    const categories = await Category.find();
+    const categories = await Category.find({ isDeleted: { $ne: true } });
 
     return res.status(201).send({
       success: true,
@@ -44,7 +52,7 @@ router.put("/:id", async (req, res) => {
 
     await Category.findByIdAndUpdate(req.body._id, data);
 
-    const categories = await Category.find();
+    const categories = await Category.find({ isDeleted: { $ne: true } });
     await saveAuditModel("categoria Actualizada", _id);
 
     return res.status(201).send({
@@ -69,7 +77,7 @@ router.post("/", async (req, res) => {
 
     await saveAuditModel("Categoria Creada", _id);
 
-    const categories = await Category.find();
+    const categories = await Category.find({ isDeleted: { $ne: true } });
 
     return res
       .status(201)

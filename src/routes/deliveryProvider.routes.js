@@ -84,6 +84,7 @@ router.post("/", async (req, res) => {
 
     await OrderProvider.findByIdAndUpdate(req.body.orderId, {
       isDelivery: true,
+      products: req.body.products,
     });
 
     req.body.products.map(async (item) => {

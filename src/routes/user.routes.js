@@ -9,9 +9,17 @@ router.delete("/:id", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
 
-    const deletedUser = await User.findById(req.params.id);
+    // const deletedUser = await User.findById(req.params.id);
 
-    if (deletedUser) await deletedUser.remove();
+    await User.findOneAndUpdate(
+      { _id: req.params.id },
+      {
+        deletedAt: new Date(),
+        isDeleted: true,
+      }
+    );
+
+    // if (deletedUser) await deletedUser.remove();
 
     await saveAuditModel("Usuario Eliminado", _id);
 
@@ -39,7 +47,6 @@ router.post("/signin", async (req, res) => {
         message: "Usuario no existe",
       });
     } else {
-
       if (password !== user.password)
         res.status(404).send({
           success: false,
@@ -64,7 +71,7 @@ router.post("/signin", async (req, res) => {
 // GET all Users
 router.get("/", async (req, res) => {
   try {
-    const users = await User.find();
+    const users = await User.find({ isDeleted: { $ne: true } });
     return res.status(201).send(users);
   } catch (error) {
     return res.status(500).send("Error");

@@ -7,7 +7,7 @@ const { decodedToken } = require("../utils");
 
 // GET all Providers
 router.get("/", async (req, res) => {
-  const providers = await Provider.find();
+  const providers = await Provider.find({ isDeleted: { $ne: true } });
 
   try {
     return res.status(201).send({ success: true, data: providers });
@@ -70,8 +70,15 @@ router.delete("/:id", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
 
-    if (_id) await Provider.findByIdAndRemove(req.params.id);
-    else throw "Error";
+    await Provider.findOneAndUpdate(
+      { _id: req.params.id },
+      {
+        deletedAt: new Date(),
+        isDeleted: true,
+        deletedBy: _id,
+      }
+    );
+
     return res.status(201).send({
       success: true,
       message: "Proveedor Borrado",

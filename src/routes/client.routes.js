@@ -6,7 +6,7 @@ const Client = require("../models/client");
 
 router.get("/", async (req, res) => {
   try {
-    const clients = await Client.find();
+    const clients = await Client.find({ isDeleted: { $ne: true } });
 
     return res.status(201).send(clients);
   } catch (error) {
@@ -35,7 +35,7 @@ router.put("/:id", async (req, res) => {
 
     await saveAuditModel("Cliente Actualizado", _id);
 
-    const clients = await Client.find();
+    const clients = await Client.find({ isDeleted: { $ne: true } });
 
     return res.status(201).send({
       success: true,
@@ -77,11 +77,19 @@ router.delete("/:id", async (req, res) => {
 
     const deletedClient = await Client.findById(req.params.id);
 
-    if (deletedClient) await deletedClient.remove();
+    // if (deletedClient) await deletedClient.remove();
+
+    await Client.findOneAndUpdate(
+      { _id: req.params.id },
+      {
+        deletedAt: new Date(),
+        isDeleted: true,
+      }
+    );
 
     await saveAuditModel("Cliente Eliminado", _id);
 
-    const clients = await Client.find();
+    const clients = await Client.find({ isDeleted: { $ne: true } });
 
     return res.status(201).send({
       success: true,

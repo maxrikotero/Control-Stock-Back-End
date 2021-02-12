@@ -7,6 +7,7 @@ const OrderProviderSchema = new Schema({
   products: [
     {
       amount: Number,
+      unitPrice: Number,
       product: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "RawMaterials",

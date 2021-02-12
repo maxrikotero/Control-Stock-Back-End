@@ -8,13 +8,27 @@ const htmlStructure = ({ client, users, sale, body, salesCount }) => {
 
   const totalIva = totalPrice * 0.21;
 
-  const totalPriceIva = billType !== "1" ? totalPrice + totalIva : totalPrice;
+  const totalPriceIva = totalPrice;
+  const totalIvaIncluded = totalPrice
+    ? (totalPrice - totalPrice / 1.21).toFixed(2)
+    : 0;
 
-  let container = `<div style='
+  let container = `
+  <div style="border: 1px solid;
+                 height: 65px;
+                 width: 100px;
+                 text-align: center;
+                 position: relative;
+                 top: 40px;
+                 left: 60%;
+                 border-radius: 3px;
+                 box-shadow: blueviolet;
+                 box-shadow: 1px 1px 1px 0px #888888;">
+  <div style='
   max-width: 219px;
-  font-size: 79px;
+  font-size: 47px;
 '>            <h3 style='    font-family: Arial, Helvetica, sans-serif;'>{0}</h3>
-  </div>`;
+  </div> </div>`;
   const billTypeText =
     billType !== "3"
       ? container.replace(
@@ -166,35 +180,23 @@ const htmlStructure = ({ client, users, sale, body, salesCount }) => {
      <body>
         <div style="border: 1px solid; margin: 20px 18px 0;border-radius:3px">
            <div style="
-              display: flex;
+              display: -webkit-flex;
               ">
               <div style="height: 150px;padding: 10px">
                  <img style="width: 150px";
                     src=${logo}   
                     />
               </div>
-              <div style="border: 1px solid;
-                 height: 65px;
-                 width: 100px;
-                 /* display: flex; */
-                 text-align: center;
-                 position: relative;
-                 top: 40px;
-                 left: 60%;
-                 border-radius: 3px;
-                 box-shadow: blueviolet;
-                 box-shadow: 1px 1px 1px 0px #888888;">
-                 <h1 style="    position: relative;
-                    top: 20%;">${billTypeText}</h1>
-              </div>
+               ${billTypeText}
+             
            </div>
-           <div style="display: flex; padding: 0px 0px 15px 15px;">
+           <div style="display: -webkit-flex; padding: 0px 0px 15px 15px;">
               <div id="bus_info" style="width: 50%;">
                  <p><strong style="font-weight: 900;">Domicilio:</strong> Cuyo 3532</p>
                  <p><strong style="font-weight: 900;">CP.:</strong> Cuyo 3532</p>
                  <p><strong style="font-weight: 900;">Tel.</strong> 2821-7200</p>
                  <p><strong style="font-weight: 900;">Domicilio</strong>: Cuyo 3532</p>
-                 <p>IVA Responsable Inscripto</p>
+                 <p>Responsable Inscripto</p>
               </div>
               <div id="bill_info">
                  <h3 style="margin-bottom: 5px;">Factura</h3>
@@ -213,9 +215,9 @@ const htmlStructure = ({ client, users, sale, body, salesCount }) => {
         </div>
         <div style="border: 1px solid; margin: 0px 18px -1px;border-radius:3px">
            <div style="
-              display: flex;
+              display: -webkit-flex;
               ">
-              <div style="display: flex; padding: 15px 0px 15px 15px;width:100%">
+              <div style="display: -webkit-flex; padding: 15px 0px 15px 15px;width:100%">
                  <div id="bill_info" style="width:50%">
                     <p><strong style="font-weight: 900;">Cuil:</strong> ${cuil}</p>
                     <p><strong style="font-weight: 900;">Teléfono:</strong>${phone}</p>
@@ -284,7 +286,7 @@ const htmlStructure = ({ client, users, sale, body, salesCount }) => {
                  </td>
                  <td class="textright">
                     <span style="font-size: 18px;">${
-                      billType !== "1" ? totalIva : 0
+                      billType === "1" ? totalIvaIncluded : "-"
                     }</span>
                  </td>
                  </td>
@@ -305,17 +307,16 @@ const htmlStructure = ({ client, users, sale, body, salesCount }) => {
 };
 
 const createPdf = async (body, client, users, _id, sale, res, salesCount) => {
-  console.log(htmlStructure({ client, users, sale, body, salesCount }));
-  // await pdf
-  //   .create(htmlStructure({ client, users, sale, body, salesCount }), {})
-  //   .toFile(`${__dirname}/tickets/sale${_id}.pdf`, (err) => {
-  //     if (err) {
-  //       return res.status(500).send({ message: "Error", error: error });
-  //     }
-  //     return res
-  //       .status(500)
-  //       .send({ success: true, message: "Venta Generada", data: sale });
-  //   });
+  await pdf
+    .create(htmlStructure({ client, users, sale, body, salesCount }), {})
+    .toFile(`${__dirname}/tickets/sale${_id}.pdf`, (err) => {
+      if (err) {
+        return res.status(500).send({ message: "Error", error: error });
+      }
+      return res
+        .status(200)
+        .send({ success: true, message: "Venta Generada", data: sale });
+    });
 };
 
 module.exports = createPdf;

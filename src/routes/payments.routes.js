@@ -2,14 +2,13 @@ const express = require("express");
 const router = express.Router();
 const { saveAuditModel, decodedToken } = require("../utils");
 
-
 // Provider Model
 const Payments = require("../models/payment");
 const Sales = require("../models/sale");
 
 // GET all Payments
 router.get("/", async (req, res) => {
-  const payments = await Payments.find();
+  const payments = await Payments.find({ isDeleted: { $ne: true } });
   res.json(payments);
 });
 
@@ -45,7 +44,7 @@ router.put("/:id", async (req, res) => {
 
     await saveAuditModel("Tipo de pago Actualizado", _id);
 
-    const payments = await Payments.find();
+    const payments = await Payments.find({ isDeleted: { $ne: true } });
 
     return res.status(201).send({
       success: true,
@@ -61,25 +60,35 @@ router.delete("/:id", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
 
-    const sales = await Sales.find();
+    // const sales = await Sales.find();
 
-    var ids = sales.reduce(
-      (acc, obj) => [...acc, obj.paymentType],
-      []
+    // var ids = sales.reduce(
+    //   (acc, obj) => [...acc, obj.paymentType],
+    //   []
+    // );
+
+    // if (ids.some((id) => id == req.params.id)) {
+    //   return res.status(500).send({
+    //     success: false,
+    //     message: "Error",
+    //     error: "Hay formas de pago con este precio.",
+    //   });
+    // }
+
+    await Payments.findOneAndUpdate(
+      { _id: req.params.id },
+      {
+        deletedAt: new Date(),
+        isDeleted: true,
+        deletedBy: _id,
+      }
     );
 
-    if (ids.some((id) => id == req.params.id)) {
-      return res.status(500).send({
-        success: false,
-        message: "Error",
-        error: "Hay formas de pago con este precio.",
-      });
-    }
-    await Payments.findByIdAndRemove(req.params.id);
+    // await Payments.findByIdAndRemove(req.params.id);
 
     await saveAuditModel("Forma de pago Eliminada", _id);
 
-    const payments = await Payments.find();
+    const payments = await Payments.find({ isDeleted: { $ne: true } });
 
     return res.status(201).send({
       success: true,

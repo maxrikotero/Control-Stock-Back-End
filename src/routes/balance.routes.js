@@ -16,10 +16,7 @@ router.get("/openbalance", async (req, res) => {
 
 // GET all Balance
 router.get("/", async (req, res) => {
-  const balances = await Balance.find({ isOpen: false }).populate({
-    path: "createdBy",
-    select: "_id firstName lastName",
-  });
+  const balances = await Balance.find({ isOpen: false });
   res.json(balances);
 });
 

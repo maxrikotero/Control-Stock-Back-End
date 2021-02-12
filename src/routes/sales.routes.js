@@ -28,7 +28,10 @@ const decreaseStock = async (_id, _quality) => {
 
 router.get("/", async (req, res) => {
   try {
-    const sales = await Sale.find();
+    const sales = await Sale.find().populate({
+      path: "products",
+      populate: { path: "product" },
+    });
     res.status(200).send({ success: true, data: sales });
   } catch (error) {
     return res.status(500).send({ message: "Error", error });
@@ -58,17 +61,29 @@ router.get("/:id", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-
   try {
     const { _id } = decodedToken(req);
     if (_id) {
-
       const allProducts = await Product.find({
-        '_id': { $in: req.body.products.map(item => mongoose.Types.ObjectId(item.product))}
+        _id: {
+          $in: req.body.products.map((item) =>
+            mongoose.Types.ObjectId(item.product)
+          ),
+        },
       });
 
-      if(allProducts.some(p => req.body.products.find(pv => pv.product === p._id.toString() && parseInt(pv.quality, 10) > p.stock ) ) ){
-        return res.status(500).send({ message: "No hay stock suficiente", error: error.message });
+      if (
+        allProducts.some((p) =>
+          req.body.products.find(
+            (pv) =>
+              pv.product === p._id.toString() &&
+              parseInt(pv.quality, 10) > p.stock
+          )
+        )
+      ) {
+        return res
+          .status(500)
+          .send({ message: "No hay stock suficiente", error: error.message });
       }
 
       const sales = await Sale.find();
@@ -86,8 +101,6 @@ router.post("/", async (req, res) => {
         totalIva: req.body.billType !== "1" ? totalPriceIva : totalPrice,
         client: req.body.client,
       });
-
-      
 
       req.body.products.map(async (item) => {
         decreaseStock(item.product, item.quality);

@@ -10,7 +10,9 @@ const RawMaterialMovement = require("../models/rawMaterialMovement");
 
 // GET all RowMaterials
 router.get("/", async (req, res) => {
-  const rawMaterials = await RawMaterial.find().populate({
+  const rawMaterials = await RawMaterial.find({
+    isDeleted: { $ne: true },
+  }).populate({
     path: "providers",
     populate: { path: "provider", select: "_id name" },
   });
@@ -133,7 +135,7 @@ router.put("/:id", async (req, res) => {
 
       await saveAuditModel("Materia Prima Actualizada", _id);
 
-      const rawMaterials = await RawMaterial.find();
+      const rawMaterials = await RawMaterial.find({ isDeleted: { $ne: true } });
 
       return res.status(201).send({
         success: true,
@@ -152,15 +154,23 @@ router.delete("/:id", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
 
-    const deletedRawMaterial = await RawMaterial.findById(req.params.id);
+    // const deletedRawMaterial = await RawMaterial.findById(req.params.id);
 
-    if (deletedRawMaterial) await deletedRawMaterial.remove();
+    await RawMaterial.findOneAndUpdate(
+      { _id: req.params.id },
+      {
+        deletedAt: new Date(),
+        isDeleted: true,
+      }
+    );
 
-    await saveAuditModel("Materia Prima Eliminado", _id);
+    // if (deletedRawMaterial) await deletedRawMaterial.remove();
+
+    await saveAuditModel("Materia Prima Eliminada", _id);
 
     return res.status(201).send({
       success: true,
-      message: "Materia Prima Borrado",
+      message: "Materia Prima Borrada",
     });
   } catch (error) {
     return res
