@@ -17,14 +17,14 @@ const ClientSchema = new Schema({
   createdBy: { type: mongoose.Schema.Types, ref: "User" },
 });
 
-ClientSchema.index(
-  { cuil: 1 },
-  {
-    unique: true,
-    partialFilterExpression: {
-      isDeleted: { $eq: false },
-    },
-  }
-);
+// ClientSchema.index(
+//   { cuil: 1 },
+//   {
+//     unique: true,
+//     partialFilterExpression: {
+//       isDeleted: { $eq: false },
+//     },
+//   }
+// );
 
 module.exports = mongoose.model("Client", ClientSchema);

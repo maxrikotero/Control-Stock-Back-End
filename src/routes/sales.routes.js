@@ -26,6 +26,19 @@ const decreaseStock = async (_id, _quality) => {
   );
 };
 
+const increaseStock = async (_id, _quality) => {
+  const product = await Product.findById(_id);
+
+  Product.findByIdAndUpdate(
+    _id,
+    {
+      stock: product.stock + _quality,
+    },
+    { new: true },
+    (err, product) => {}
+  );
+};
+
 router.get("/", async (req, res) => {
   try {
     const sales = await Sale.find().populate({
@@ -102,11 +115,24 @@ router.post("/", async (req, res) => {
         client: req.body.client,
       });
 
-      req.body.products.map(async (item) => {
-        decreaseStock(item.product, item.quality);
+      const products = req.body.products
+        .reduce(
+          (acc, item) =>
+            !acc.includes(item.product) ? [...acc, item.product] : acc,
+          []
+        )
+        .map((itemProduct) => ({
+          productId: itemProduct,
+          quality: req.body.products
+            .filter((productItem) => productItem.product === itemProduct)
+            .reduce((acc, i) => acc + Number(i.quality), 0),
+        }));
+
+      products.map(async (item) => {
+        decreaseStock(item.productId, item.quality);
 
         const movement = new ProductMovement({
-          product: item.product,
+          product: item.productId,
           output: true,
           isSale: true,
           quality: item.quality,
@@ -154,6 +180,63 @@ router.put("/:id", async (req, res) => {
       });
     }
   } catch (error) {
+    return res
+      .status(500)
+      .send({ success: false, message: "Error", error: error.message });
+  }
+});
+
+router.delete("/:id", async (req, res) => {
+  try {
+    const { _id } = decodedToken(req);
+
+    // const deletedProduct = await Product.findById(req.params.id);
+
+    // if (deletedProduct) await deletedProduct.remove();
+
+    const sale = await Sale.findById({ _id: req.params.id });
+
+    //console.log(sale.products);
+    const products = sale.products
+      .reduce(
+        (acc, item) =>
+          !acc.some((i) => i !== item.product)
+            ? [...acc, item.product.toString()]
+            : acc,
+        []
+      )
+      .map((itemProduct) => {
+        return {
+          productId: itemProduct,
+          quality: sale.products
+            .filter(
+              (productItem) => productItem.product.toString() === itemProduct
+            )
+            .reduce((acc, i) => acc + Number(i.quality), 0),
+        };
+      });
+
+    products.map(async (item) => increaseStock(item.productId, item.quality));
+
+    //   // const movement = new ProductMovement({
+    //   //   product: item.productId,
+    //   //   output: true,
+    //   //   isSale: true,
+    //   //   quality: item.quality,
+    //   // });
+
+    //   // await movement.save();
+    // });
+
+    await Sale.remove();
+    // await saveAuditModel("Venta Borrada", _id);
+
+    return res.status(201).send({
+      success: true,
+      message: "Venta Borrada",
+    });
+  } catch (error) {
+    console.log(error.message);
     return res
       .status(500)
       .send({ success: false, message: "Error", error: error.message });

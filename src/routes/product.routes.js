@@ -140,13 +140,13 @@ router.put("/:id", async (req, res) => {
       const decreseStock = product.stock >= req.body.stock;
       const updateStock = product.stock !== req.body.stock;
 
-      if (updateStock) {
+      if (updateStock || req.params?.from) {
         const movement = new ProductMovement({
           product: req.body._id,
-          input: !decreseStock,
-          output: decreseStock,
+          input: req.params?.from ? true : !decreseStock,
+          output: req.params?.from ? false : decreseStock,
           isUpdated: true,
-          quality: req.body.stock,
+          quality: req.body?.quality ?? 0,
           createdBy: _id,
         });
         await movement.save();
@@ -188,7 +188,7 @@ router.delete("/:id", async (req, res) => {
       }
     );
 
-    // if (deletedProduct) await deletedProduct.remove();
+    if (Product) await deletedProduct.remove();
 
     await saveAuditModel("Producto Eliminado", _id);
 

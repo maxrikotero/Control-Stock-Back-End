@@ -29,14 +29,14 @@ const ProductSchema = new Schema({
   updatedBy: { type: mongoose.Schema.Types, ref: "User" },
 });
 
-ProductSchema.index(
-  { code: 1 },
-  {
-    unique: true,
-    partialFilterExpression: {
-      isDeleted: { $eq: false },
-    },
-  }
-);
+// ProductSchema.index(
+//   { code: 1 },
+//   {
+//     unique: true,
+//     partialFilterExpression: {
+//       isDeleted: { $eq: false },
+//     },
+//   }
+// );
 
 module.exports = mongoose.model("Product", ProductSchema);

@@ -11,14 +11,14 @@ const PriceTypeSchema = new Schema({
   deletedBy: { type: mongoose.Schema.Types, ref: "User" },
 });
 
-PriceTypeSchema.index(
-  { name: 1 },
-  {
-    unique: true,
-    partialFilterExpression: {
-      isDeleted: { $eq: false },
-    },
-  }
-);
+// PriceTypeSchema.index(
+//   { name: 1 },
+//   {
+//     unique: true,
+//     partialFilterExpression: {
+//       isDeleted: { $eq: false },
+//     },
+//   }
+// );
 
 module.exports = mongoose.model("PriceType", PriceTypeSchema);

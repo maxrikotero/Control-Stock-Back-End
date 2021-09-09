@@ -11,14 +11,14 @@ const PaymentSchema = new Schema({
   createAt: { type: Date, default: Date.now },
 });
 
-PaymentSchema.index(
-  { name: 1 },
-  {
-    unique: true,
-    partialFilterExpression: {
-      isDeleted: { $eq: false },
-    },
-  }
-);
+// PaymentSchema.index(
+//   { name: 1 },
+//   {
+//     unique: true,
+//     partialFilterExpression: {
+//       isDeleted: { $eq: false },
+//     },
+//   }
+// );
 
 module.exports = mongoose.model("Payments", PaymentSchema);

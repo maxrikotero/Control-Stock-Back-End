@@ -28,14 +28,14 @@ const RawMaterialSchema = new Schema({
   updatedBy: { type: mongoose.Schema.Types, ref: "User" },
 });
 
-RawMaterialSchema.index(
-  { name: 1 },
-  {
-    unique: true,
-    partialFilterExpression: {
-      isDeleted: { $eq: false },
-    },
-  }
-);
+// RawMaterialSchema.index(
+//   { name: 1 },
+//   {
+//     unique: true,
+//     partialFilterExpression: {
+//       isDeleted: { $eq: false },
+//     },
+//   }
+// );
 
 module.exports = mongoose.model("RawMaterials", RawMaterialSchema);
