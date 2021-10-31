@@ -15,7 +15,14 @@ const ProductSchema = new Schema({
       },
     },
   ],
-  expires: [{ expire: Date, entryDate: Date, amount: Number }],
+  expires: [
+    {
+      _id: mongoose.Schema.Types.ObjectId,
+      expire: Date,
+      entryDate: Date,
+      amount: Number,
+    },
+  ],
   category: { type: mongoose.Schema.Types, ref: "Category" },
   minStock: { type: Number, default: 0 },
   stock: { type: Number, default: 0, required: true },

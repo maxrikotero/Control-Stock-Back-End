@@ -41,10 +41,15 @@ const increaseStock = async (_id, _quality) => {
 
 router.get("/", async (req, res) => {
   try {
-    const sales = await Sale.find().populate({
-      path: "products",
-      populate: { path: "product" },
-    });
+    const sales = await Sale.find()
+      .populate({
+        path: "products",
+        populate: { path: "product" },
+      })
+      .populate({
+        path: "client",
+        select: "name address phone cuil",
+      });
     res.status(200).send({ success: true, data: sales });
   } catch (error) {
     return res.status(500).send({ message: "Error", error });
@@ -190,17 +195,12 @@ router.delete("/:id", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
 
-    // const deletedProduct = await Product.findById(req.params.id);
-
-    // if (deletedProduct) await deletedProduct.remove();
-
     const sale = await Sale.findById({ _id: req.params.id });
 
-    //console.log(sale.products);
     const products = sale.products
       .reduce(
         (acc, item) =>
-          !acc.some((i) => i !== item.product)
+          !acc.includes(item.product.toString())
             ? [...acc, item.product.toString()]
             : acc,
         []
@@ -216,20 +216,11 @@ router.delete("/:id", async (req, res) => {
         };
       });
 
-    products.map(async (item) => increaseStock(item.productId, item.quality));
+    products.map(
+      async (item) => await increaseStock(item.productId, item.quality)
+    );
 
-    //   // const movement = new ProductMovement({
-    //   //   product: item.productId,
-    //   //   output: true,
-    //   //   isSale: true,
-    //   //   quality: item.quality,
-    //   // });
-
-    //   // await movement.save();
-    // });
-
-    await Sale.remove();
-    // await saveAuditModel("Venta Borrada", _id);
+    await sale.remove();
 
     return res.status(201).send({
       success: true,

@@ -201,7 +201,7 @@ const htmlStructure = ({ client, users, sale, body, salesCount }) => {
               <div id="bill_info">
                  <h3 style="margin-bottom: 5px;">Factura</h3>
                  <p>
-                 <h4>N°: ${salesCount}</h4>
+                 <h4>N°: ${salesCount + 1}</h4>
                  </p>
                  <p><strong style="font-weight: 900;">Fecha:</strong> ${`${day}-0${month}-${year}`}</p>
                  <p><strong style="font-weight: 900;">Hora:</strong> ${
@@ -221,7 +221,6 @@ const htmlStructure = ({ client, users, sale, body, salesCount }) => {
                  <div id="bill_info" style="width:50%">
                     <p><strong style="font-weight: 900;">Cuil:</strong> ${cuil}</p>
                     <p><strong style="font-weight: 900;">Teléfono:</strong>${phone}</p>
-                    <p><strong style="font-weight: 900;">Vendedor:</strong> Maximiliano orellana</p>
                  </div>
                  <div id="bill_info" style="width:50%">
                     <p><strong style="font-weight: 900;">Nombre:</strong> ${name}</p>
@@ -307,6 +306,7 @@ const htmlStructure = ({ client, users, sale, body, salesCount }) => {
 };
 
 const createPdf = async (body, client, users, _id, sale, res, salesCount) => {
+  console.log("salesCount ", salesCount);
   await pdf
     .create(htmlStructure({ client, users, sale, body, salesCount }), {})
     .toFile(`${__dirname}/tickets/sale${_id}.pdf`, (err) => {
