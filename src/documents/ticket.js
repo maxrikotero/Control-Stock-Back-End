@@ -306,12 +306,15 @@ const htmlStructure = ({ client, users, sale, body, salesCount }) => {
 };
 
 const createPdf = async (body, client, users, _id, sale, res, salesCount) => {
-  console.log("salesCount ", salesCount);
   await pdf
-    .create(htmlStructure({ client, users, sale, body, salesCount }), {})
+    .create(htmlStructure({ client, users, sale, body, salesCount }), {
+      format: "Letter",
+      phantomPath: "node_modules/phantomjs-prebuilt/bin/phantomjs",
+    })
     .toFile(`${__dirname}/tickets/sale${_id}.pdf`, (err) => {
+      console.log("err ", err);
       if (err) {
-        return res.status(500).send({ message: "Error", error: error });
+        return res.status(500).send({ message: "Error", error: err });
       }
       return res
         .status(200)
