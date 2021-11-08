@@ -106,8 +106,8 @@ router.post("/", async (req, res) => {
 
       const sales = await Sale.find();
       const totalPrice = req.body.totalPrice;
-      const totalIva = totalPrice * 0.21;
-      const totalPriceIva = totalPrice + totalIva;
+      const totalIva = Number(totalPrice) * 0.21;
+      const totalPriceIva = Number(totalPrice) + totalIva;
 
       const newSale = new Sale({
         products: req.body.products,
@@ -116,7 +116,7 @@ router.post("/", async (req, res) => {
         paymentType: req.body.paymentType,
         billType: req.body.billType,
         totalPrice: req.body.totalPrice,
-        totalIva: req.body.billType !== "1" ? totalPriceIva : totalPrice,
+        totalIva: req.body.billType !== "1" ? totalPriceIva.toFixed(2) : 0,
         client: req.body.client,
       });
 
