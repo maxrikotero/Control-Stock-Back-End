@@ -78,6 +78,37 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+router.post("/createpdf", async (req, res) => {
+  try {
+    const { _id } = decodedToken(req);
+    if (_id) {
+      const client = await Client.find({ _id: req.body.client._id });
+
+      const users = await User.find({ _id });
+
+      await createPdf(
+        {
+          ...req.body,
+          products: req.body.products.map((item) => ({
+            ...item,
+            name: item.product.name,
+          })),
+        },
+        client,
+        users,
+        req.body._id,
+        req.body,
+        res,
+        req.body.billNumber
+      );
+    } else {
+      return res.status(200).send({ message: " No autorizado." });
+    }
+  } catch (error) {
+    return res.status(500).send({ message: "Error", error: error.message });
+  }
+});
+
 router.post("/", async (req, res) => {
   try {
     const { _id } = decodedToken(req);

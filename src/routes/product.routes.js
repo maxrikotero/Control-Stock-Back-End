@@ -177,7 +177,7 @@ router.delete("/:id", async (req, res) => {
   try {
     const { _id } = decodedToken(req);
 
-    // const deletedProduct = await Product.findById(req.params.id);
+    const deletedProduct = await Product.findById(req.params.id);
 
     await Product.findOneAndUpdate(
       { _id: req.params.id },
@@ -188,9 +188,9 @@ router.delete("/:id", async (req, res) => {
       }
     );
 
-    if (Product) await deletedProduct.remove();
+    // if (Product) await deletedProduct.remove();
 
-    await saveAuditModel("Producto Eliminado", _id);
+    // await saveAuditModel("Producto Eliminado", _id);
 
     return res.status(201).send({
       success: true,
